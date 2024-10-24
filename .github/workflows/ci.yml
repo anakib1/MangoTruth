@@ -16,7 +16,7 @@ jobs:
       GO_VERSION: 1.23
     strategy:
       matrix:
-        subproject: [frontend, compute, models, core]
+        subproject: [frontend, compute, detectors, core]
 
     steps:
       - name: Checkout repository
