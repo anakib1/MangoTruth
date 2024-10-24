@@ -9,14 +9,14 @@ on:
       - main
 
 jobs:
-  install:
+  install_and_build_and_test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        subproject: [ frontend, compute, detectors, core ]
     env:
       PYTHON_VERSION: 3.11
       GO_VERSION: 1.23
-    strategy:
-      matrix:
-        subproject: [frontend, compute, detectors, core]
 
     steps:
       - name: Checkout repository
@@ -28,7 +28,17 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install dependencies for ${{ matrix.subproject }}
+      - name: Cache Python dependencies
+        if: matrix.subproject != 'core'
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+          key: python-${{ matrix.subproject }}-${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            python-${{ matrix.subproject }}-${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
         if: matrix.subproject != 'core'
         run: |
           pip install -r ${{ matrix.subproject }}/requirements.txt
@@ -39,77 +49,27 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Install Go dependencies for core
+      - name: Cache Go modules
         if: matrix.subproject == 'core'
-        run: |
-          go mod download
-
-  build:
-    runs-on: ubuntu-latest
-    env:
-      PYTHON_VERSION: 3.11
-      GO_VERSION: 1.23
-    strategy:
-      matrix:
-        subproject: [frontend, compute, detectors, core]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Python ${{ matrix.subproject }}
-        if: matrix.subproject != 'core'
-        uses: actions/setup-python@v4
+        uses: actions/cache@v3
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: go-mod-${{ matrix.subproject }}-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-mod-${{ matrix.subproject }}-${{ runner.os }}-
 
-      - name: Build ${{ matrix.subproject }}
+      - name: Build go subproject
+        if: matrix.subproject == 'core'
+        run: go build ./core/main
+      - name: Build python subproject
         if: matrix.subproject != 'core'
-        run: |
-          echo "No build step required for ${{ matrix.subproject }}"
+        run: echo "No build step required for ${{ matrix.subproject }}"
 
-      - name: Set up Go for core
+      - name: Run GO tests for ${{ matrix.subproject }}
         if: matrix.subproject == 'core'
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Build core
-        if: matrix.subproject == 'core'
-        run: |
-          go build ./core/main
-
-  test:
-    runs-on: ubuntu-latest
-    env:
-      PYTHON_VERSION: 3.11
-      GO_VERSION: 1.20
-    strategy:
-      matrix:
-        subproject: [frontend, compute, detectors, core]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Python ${{ matrix.subproject }}
+        run: go test ./core/tests/
+      - name: Run Python tests for ${{ matrix.subproject }}
         if: matrix.subproject != 'core'
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Run tests for ${{ matrix.subproject }}
-        if: matrix.subproject != 'core'
-        run: |
-          python -m pytest ${{ matrix.subproject }}/tests/
-
-      - name: Set up Go for core
-        if: matrix.subproject == 'core'
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Run tests for core
-        if: matrix.subproject == 'core'
-        run: |
-          go test ./core/tests/
+        run: python -m pytest ${{ matrix.subproject }}/tests/
