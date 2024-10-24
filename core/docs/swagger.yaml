@@ -1,0 +1,125 @@
+basePath: /api/v1
+definitions:
+  main.DetectionRequest:
+    description: DetectionRequest contains the UUID and content to be analyzed
+    properties:
+      content:
+        description: |-
+          Content to be analyzed for detection
+          required: true
+          example: This is the content to be analyzed.
+        example: This is the content to be analyzed.
+        type: string
+      requestId:
+        description: |-
+          RequestID is the unique identifier for the detection request
+          required: true
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        type: string
+    type: object
+  main.DetectionStatus:
+    description: DetectionStatus includes the status of the request and the verdict
+    properties:
+      status:
+        description: |-
+          Status is the current status of the detection request
+          Enum: "REJECTED" "FAILED" "IN_PROGRESS" "FINISHED"
+          required: true
+          example: IN_PROGRESS
+        example: IN_PROGRESS
+        type: string
+      verdict:
+        allOf:
+        - $ref: '#/definitions/main.Verdict'
+        description: |-
+          Verdict is the result of the detection (optional)
+          It can be null if no verdict is available yet
+    type: object
+  main.Label:
+    properties:
+      label:
+        description: |-
+          Label name (e.g., "plagiarism" or "ai-generated")
+          example: plagiarism
+        example: plagiarism
+        type: string
+      probability:
+        description: |-
+          Probability of the label being true
+          example: 0.85
+        example: 0.85
+        type: number
+    type: object
+  main.Verdict:
+    properties:
+      labels:
+        description: Labels with associated probabilities
+        items:
+          $ref: '#/definitions/main.Label'
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a detection system API to process requests and return detection
+    status.
+  title: Detection API
+  version: "1.0"
+paths:
+  /detection:
+    get:
+      description: Fetch the detection status and verdict by requestId.
+      parameters:
+      - description: Request ID
+        format: uuid
+        in: query
+        name: requestId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.DetectionStatus'
+        "400":
+          description: Missing requestId parameter
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Request not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get the detection status
+    put:
+      consumes:
+      - application/json
+      description: Submit a detection request for processing.
+      parameters:
+      - description: Detection Request
+        in: body
+        name: detectionRequest
+        required: true
+        schema:
+          $ref: '#/definitions/main.DetectionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.DetectionStatus'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Submit a detection request
+swagger: "2.0"
