@@ -1,2 +1,4 @@
 class TestFrontend:
-    pass
+    def test_frontend_exists(self):
+        from frontend import app
+        assert app is not None
