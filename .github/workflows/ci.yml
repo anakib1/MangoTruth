@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYTHON_VERSION: 3.11
-      GO_VERSION: 1.20
+      GO_VERSION: 1.23
     strategy:
       matrix:
         subproject: [frontend, compute, models, core]
@@ -101,7 +101,7 @@ jobs:
       - name: Run tests for ${{ matrix.subproject }}
         if: matrix.subproject != 'core'
         run: |
-          pytest ${{ matrix.subproject }}/tests/
+          python -m pytest ${{ matrix.subproject }}/tests/
 
       - name: Set up Go for core
         if: matrix.subproject == 'core'
