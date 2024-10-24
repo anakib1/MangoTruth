@@ -1,6 +1,5 @@
-import pytest
 import numpy as np
-from models.mocks import MockDetector  # Assuming MockDetector is saved in a file named `mock_detector.py`
+from detectors.mocks import MockDetector  # Assuming MockDetector is saved in a file named `mock_detector.py`
 
 
 # Test case for MockDetector

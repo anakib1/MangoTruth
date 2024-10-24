@@ -1,0 +1,2 @@
+class TestCompute:
+    pass
