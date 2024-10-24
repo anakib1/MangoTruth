@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Optional, List
 
-from models.interfaces import IDetector
+from detectors.interfaces import IDetector
 
 
 class MockDetector(IDetector):
