@@ -1,5 +1,7 @@
 # MangoTruth
 
+[![CI Pipeline](https://github.com/anakib1/MangoTruth/actions/workflows/ci.yml/badge.svg)](https://github.com/anakib1/MangoTruth/actions/workflows/ci.yml)
+
 ## Purpose:
 
 **MangoTruth** is an open srouce AI detection system focused on:
