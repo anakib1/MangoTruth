@@ -48,10 +48,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYTHON_VERSION: 3.11
-      GO_VERSION: 1.20
+      GO_VERSION: 1.23
     strategy:
       matrix:
-        subproject: [frontend, compute, models, core]
+        subproject: [frontend, compute, detectors, core]
 
     steps:
       - name: Checkout repository
@@ -86,7 +86,7 @@ jobs:
       GO_VERSION: 1.20
     strategy:
       matrix:
-        subproject: [frontend, compute, models, core]
+        subproject: [frontend, compute, detectors, core]
 
     steps:
       - name: Checkout repository
