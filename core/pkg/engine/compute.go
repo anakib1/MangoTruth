@@ -5,6 +5,7 @@ import (
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log/slog"
+	"mango_truth/core/pkg"
 	"mango_truth/core/pkg/modules"
 	"time"
 )
@@ -16,6 +17,7 @@ type ComputeRouter struct {
 	rSinkQ *amqp.Queue
 	rFeedQ *amqp.Queue
 	rFeed  <-chan amqp.Delivery
+	cfg    pkg.ComputeConfig
 }
 
 func mustExistQueue(ch *amqp.Channel, name string) *amqp.Queue {
@@ -29,7 +31,7 @@ func mustExistQueue(ch *amqp.Channel, name string) *amqp.Queue {
 func mustExistRabbitMQ(url string) *amqp.Connection {
 	conn, err := amqp.Dial(url)
 	if err != nil {
-		panic(fmt.Sprintf("Could not connect to RabbitMQ. Error:  %v", err))
+		panic(fmt.Sprintf("Could not connect to Compute. Error:  %v", err))
 	}
 
 	return conn
@@ -51,16 +53,16 @@ func mustConsume(ch *amqp.Channel, feed *amqp.Queue) <-chan amqp.Delivery {
 	return m
 }
 
-func NewComputeRouter(feed <-chan modules.DetectionRequest, sink chan<- modules.DetectionStatus) *ComputeRouter {
-	conn := mustExistRabbitMQ("amqp://guest:guest@localhost:5672/")
+func NewComputeRouter(cfg pkg.ComputeConfig, feed <-chan modules.DetectionRequest, sink chan<- modules.DetectionStatus) *ComputeRouter {
+	conn := mustExistRabbitMQ(fmt.Sprintf("amqp://%s:%s@%s:%s/", cfg.Username, cfg.Password, cfg.Host, cfg.Port))
 	ch := mustExistChannel(conn)
 
-	rabbitSink := mustExistQueue(ch, "DetectionRequests")
-	rabbitFeed := mustExistQueue(ch, "DetectionResponses")
+	rabbitSink := mustExistQueue(ch, cfg.RequestQueueName)
+	rabbitFeed := mustExistQueue(ch, cfg.ResponseQueueName)
 
 	rFeed := mustConsume(ch, rabbitFeed)
 
-	return &ComputeRouter{feed: feed, sink: sink, rCh: ch, rSinkQ: rabbitSink, rFeedQ: rabbitFeed, rFeed: rFeed}
+	return &ComputeRouter{feed: feed, sink: sink, rCh: ch, rSinkQ: rabbitSink, rFeedQ: rabbitFeed, rFeed: rFeed, cfg: cfg}
 }
 
 func (c *ComputeRouter) Work() {
@@ -89,7 +91,7 @@ func (c *ComputeRouter) Work() {
 				continue
 			}
 			c.sink <- resp
-		case <-time.After(5 * time.Second):
+		case <-time.After(time.Second * time.Duration(c.cfg.IdlePeriodSeconds)):
 			slog.Debug("Compute idling..")
 		}
 	}

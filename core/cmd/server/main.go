@@ -4,22 +4,25 @@ import (
 	"log"
 	"log/slog"
 	_ "mango_truth/core/docs"
+	"mango_truth/core/pkg"
 	engine2 "mango_truth/core/pkg/engine"
+	"mango_truth/core/pkg/utils"
 	"mango_truth/core/pkg/web"
-	"os"
 )
 
 func main() {
 
-	restToEngine := make(chan any)
+	cfg := pkg.MustGetConfig()
+	utils.ConfigureLogging(&cfg.Logger)
+	slog.Info("Running with config:", "config", cfg)
 
-	slog.SetLogLoggerLevel(slog.Level(-4))
+	restToEngine := make(chan any, cfg.Engine.FeedBufferSize)
 
-	opts := &slog.HandlerOptions{Level: slog.LevelDebug}
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
-	slog.SetDefault(logger)
+	engine, requests, statuses := engine2.NewMangoEngine(cfg.Engine, restToEngine)
+	go engine.Work()
+	router := engine2.NewComputeRouter(cfg.Compute, requests, statuses)
+	go router.Work()
 
-	go engine2.NewMangoEngine(restToEngine).Work()
-	log.Fatal(web.NewMangoRest(restToEngine).Run(":8080"))
+	log.Fatal(web.NewMangoRest(restToEngine).Run(":" + cfg.Server.Port))
 
 }

@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	"log/slog"
+	"mango_truth/core/pkg"
 	"mango_truth/core/pkg/modules"
 	"time"
 )
@@ -12,16 +13,21 @@ type MangoEngine struct {
 	compute     chan<- modules.DetectionRequest
 	computeResp <-chan modules.DetectionStatus
 	storage     *Storage
+	cfg         pkg.EngineConfig
 }
 
-func NewMangoEngine(feed <-chan any) *MangoEngine {
-	computeReq := make(chan modules.DetectionRequest)
-	computeResp := make(chan modules.DetectionStatus)
-	go NewComputeRouter(computeReq, computeResp).Work()
+func NewMangoEngine(cfg pkg.EngineConfig, feed <-chan any) (*MangoEngine, chan modules.DetectionRequest, chan modules.DetectionStatus) {
+	computeReq := make(chan modules.DetectionRequest, cfg.ComputeBufferSize)
+	computeResp := make(chan modules.DetectionStatus, cfg.ComputeBufferSize)
 
-	ret := MangoEngine{feed: feed, compute: computeReq, computeResp: computeResp, storage: &Storage{}}
+	ret := MangoEngine{
+		feed:        feed,
+		compute:     computeReq,
+		computeResp: computeResp,
+		storage:     &Storage{},
+		cfg:         cfg}
 
-	return &ret
+	return &ret, computeReq, computeResp
 }
 
 func (e *MangoEngine) Work() {
@@ -51,7 +57,7 @@ func (e *MangoEngine) Work() {
 		case upd := <-e.computeResp:
 			e.storage.updStatus(upd)
 
-		case <-time.After(5 * time.Second):
+		case <-time.After(time.Second * time.Duration(e.cfg.IdlePeriodSeconds)):
 			slog.Debug("Engine idling..")
 		}
 	}

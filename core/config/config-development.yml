@@ -1,0 +1,17 @@
+server:
+  port: 8080
+logger:
+  level: "debug"
+  format: "json"
+engine:
+  feedBufferSize: 100
+  computeBufferSize: 100
+  idlePeriodSeconds: 5
+compute:
+  host: "localhost"
+  port: "5672"
+  username: "guest"
+  password: "guest"
+  idlePeriodSeconds: 5
+  requestQueueName: "request_queue"
+  responseQueueName: "response_queue"
