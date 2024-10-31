@@ -26,12 +26,24 @@ Repository consists of:
 |------|------------------------------------------|---------------------| 
 | GLTR | [link](https://arxiv.org/pdf/1906.04043) | TBD                 |
 
-## Configuration
+## Installation from source
 
 To set up installation on your environment follow these steps:
 
-- TBD
-- TBD
+- Core:
+    - [Install go](https://go.dev/doc/install)
+    - [Install rabbitMQ](https://www.rabbitmq.com/docs/download)
+    - Configure server using `core/config/config-development.yml` file. Extensive configuration reference coming soon
+    - Run `go build ./core/cmd/server`
+    - Run `server` executable
+- Compute:
+    - TBD
+- Frontend:
+    - TBD
+
+## Running as container
+
+TBD
 
 ## Documentation
 
