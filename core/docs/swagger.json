@@ -1,29 +1,28 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a detection system API to process requests and return detection status.",
-        "title": "Detection API",
-        "contact": {},
-        "version": "1.0"
+        "contact": {}
     },
-    "host": "localhost:8080",
-    "basePath": "/api/v1",
     "paths": {
         "/detection": {
             "get": {
                 "description": "Fetch the detection status and verdict by requestId.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "summary": "Get the detection status",
                 "parameters": [
                     {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Request ID",
-                        "name": "requestId",
-                        "in": "query",
-                        "required": true
+                        "description": "Detection Query Request",
+                        "name": "detectionQuery",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/modules.DetectionQuery"
+                        }
                     }
                 ],
                 "responses": {
@@ -94,6 +93,19 @@
         }
     },
     "definitions": {
+        "modules.DetectionQuery": {
+            "type": "object",
+            "required": [
+                "requestId"
+            ],
+            "properties": {
+                "requestId": {
+                    "description": "RequestID is the unique identifier for the detection request\nrequired: true\nexample: f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                    "type": "string",
+                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                }
+            }
+        },
         "modules.DetectionRequest": {
             "description": "DetectionRequest contains the request UUID and content to be analyzed",
             "type": "object",

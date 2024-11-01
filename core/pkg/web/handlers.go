@@ -11,7 +11,8 @@ import (
 // @Summary Get the detection status
 // @Description Fetch the detection status and verdict by requestId.
 // @Produce  json
-// @Param requestId query string true "Request ID" format(uuid)
+// @Accept  json
+// @Param detectionQuery body modules.DetectionQuery true "Detection Query Request"
 // @Success 200 {object} modules.DetectionStatus
 // @Failure 400 {object} map[string]string "Missing requestId parameter"
 // @Failure 404 {object} map[string]string "Request not found"

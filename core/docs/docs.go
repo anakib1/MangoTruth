@@ -18,18 +18,22 @@ const docTemplate = `{
         "/detection": {
             "get": {
                 "description": "Fetch the detection status and verdict by requestId.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "summary": "Get the detection status",
                 "parameters": [
                     {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Request ID",
-                        "name": "requestId",
-                        "in": "query",
-                        "required": true
+                        "description": "Detection Query Request",
+                        "name": "detectionQuery",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/modules.DetectionQuery"
+                        }
                     }
                 ],
                 "responses": {
@@ -100,6 +104,19 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "modules.DetectionQuery": {
+            "type": "object",
+            "required": [
+                "requestId"
+            ],
+            "properties": {
+                "requestId": {
+                    "description": "RequestID is the unique identifier for the detection request\nrequired: true\nexample: f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                    "type": "string",
+                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                }
+            }
+        },
         "modules.DetectionRequest": {
             "description": "DetectionRequest contains the request UUID and content to be analyzed",
             "type": "object",
@@ -178,12 +195,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Detection API",
-	Description:      "This is a detection system API to process requests and return detection status.",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

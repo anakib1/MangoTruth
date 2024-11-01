@@ -1,5 +1,16 @@
-basePath: /api/v1
 definitions:
+  modules.DetectionQuery:
+    properties:
+      requestId:
+        description: |-
+          RequestID is the unique identifier for the detection request
+          required: true
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        type: string
+    required:
+    - requestId
+    type: object
   modules.DetectionRequest:
     description: DetectionRequest contains the request UUID and content to be analyzed
     properties:
@@ -70,24 +81,21 @@ definitions:
           $ref: '#/definitions/modules.Label'
         type: array
     type: object
-host: localhost:8080
 info:
   contact: {}
-  description: This is a detection system API to process requests and return detection
-    status.
-  title: Detection API
-  version: "1.0"
 paths:
   /detection:
     get:
+      consumes:
+      - application/json
       description: Fetch the detection status and verdict by requestId.
       parameters:
-      - description: Request ID
-        format: uuid
-        in: query
-        name: requestId
+      - description: Detection Query Request
+        in: body
+        name: detectionQuery
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/modules.DetectionQuery'
       produces:
       - application/json
       responses:
