@@ -35,11 +35,14 @@ To set up installation on your environment follow these steps:
     - [Install rabbitMQ](https://www.rabbitmq.com/docs/download)
     - Configure server using `core/config/config-development.yml` file. Extensive configuration reference coming soon
     - Run `go build ./core/cmd/server`
-    - Run `server` executable
+    - Run `go run core/cmd/server/main.go`
 - Compute:
     - TBD
 - Frontend:
-    - TBD
+    - [Install Python](https://www.python.org/downloads/release/python-3100/)
+    - [Optional](https://docs.python.org/3/library/venv.html) create venv
+    - pip install -r "frontend/requirements.txt"
+    - python "frontend/app.py"
 
 ## Running as container
 
