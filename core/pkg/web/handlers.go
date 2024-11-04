@@ -59,7 +59,7 @@ func (r *MangoRest) waitFromEngine(c *gin.Context, req modules.ClientToServer) {
 	resp := make(chan modules.DetectionStatus)
 	req.Ret = resp
 
-	r.engine <- req
+	r.engineSink <- req
 
 	select {
 	case res := <-resp:
