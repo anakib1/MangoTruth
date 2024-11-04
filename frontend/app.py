@@ -8,6 +8,7 @@ import uuid
 import json
 import mimetypes
 
+
 def extract_text_from_file(file):
     if file is None:
         return "", None
@@ -57,6 +58,7 @@ def extract_text_from_file(file):
 
     return extracted_text, file_bytes
 
+
 def submit_detection(server_url, input_text, file):
     if file is not None:
         input_text, file_bytes = extract_text_from_file(file)
@@ -103,6 +105,7 @@ def submit_detection(server_url, input_text, file):
 
     except requests.exceptions.RequestException as e:
         raise gr.Error(f"An error occurred: {e}")
+
 
 def fetch_status_wrapper(server_url, request_id):
     if not request_id.strip():
@@ -193,92 +196,96 @@ def fetch_status_wrapper(server_url, request_id):
     except requests.exceptions.RequestException as e:
         raise gr.Error(f"An error occurred: {e}")
 
-# Define the Gradio interface
-with gr.Blocks() as demo:
-    gr.Markdown("# Text Detection Application")
 
-    with gr.Tab("Submit Detection"):
-        with gr.Row():
-            with gr.Column(scale=1):
-                submit_server_url = gr.Textbox(
-                    label="Server URL",
-                    value=os.getenv("SERVER_URL", "http://localhost:8080/api/v1/detection"),
-                    placeholder="Enter the REST API server URL...",
-                )
+if __name__ == '__main__':
+    # Define the Gradio interface
+    with gr.Blocks() as demo:
+        gr.Markdown("# Text Detection Application")
 
-        input_method_submit = gr.Radio(
-            choices=["Paste Text", "Upload File"],
-            value="Paste Text",
-            label="Input Method",
-            interactive=True
-        )
+        with gr.Tab("Submit Detection"):
+            with gr.Row():
+                with gr.Column(scale=1):
+                    submit_server_url = gr.Textbox(
+                        label="Server URL",
+                        value=os.getenv("SERVER_URL", "http://localhost:8080/api/v1/detection"),
+                        placeholder="Enter the REST API server URL...",
+                    )
 
-        with gr.Row():
-            with gr.Column(scale=1):
-                submit_input_text = gr.Textbox(
-                    label="Input Text",
-                    lines=15,
-                    placeholder="Enter or paste your document text here...",
-                    visible=True
-                )
-                submit_file_upload = gr.File(
-                    label="Upload File",
-                    file_types=[".pdf", ".txt"],
-                    visible=False
-                )
+            input_method_submit = gr.Radio(
+                choices=["Paste Text", "Upload File"],
+                value="Paste Text",
+                label="Input Method",
+                interactive=True
+            )
 
-        def toggle_input_submit(input_method):
-            if input_method == "Paste Text":
-                return gr.update(visible=True), gr.update(visible=False)
-            elif input_method == "Upload File":
-                return gr.update(visible=False), gr.update(visible=True)
+            with gr.Row():
+                with gr.Column(scale=1):
+                    submit_input_text = gr.Textbox(
+                        label="Input Text",
+                        lines=15,
+                        placeholder="Enter or paste your document text here...",
+                        visible=True
+                    )
+                    submit_file_upload = gr.File(
+                        label="Upload File",
+                        file_types=[".pdf", ".txt"],
+                        visible=False
+                    )
 
-        input_method_submit.change(
-            toggle_input_submit,
-            inputs=[input_method_submit],
-            outputs=[submit_input_text, submit_file_upload]
-        )
 
-        submit_btn = gr.Button("Submit Detection")
+            def toggle_input_submit(input_method):
+                if input_method == "Paste Text":
+                    return gr.update(visible=True), gr.update(visible=False)
+                elif input_method == "Upload File":
+                    return gr.update(visible=False), gr.update(visible=True)
 
-        submit_output = gr.JSON(label="Submission Result")
 
-        submit_btn.click(
-            submit_detection,
-            inputs=[submit_server_url, submit_input_text, submit_file_upload],
-            outputs=[submit_output],
-            show_progress=True
-        )
+            input_method_submit.change(
+                toggle_input_submit,
+                inputs=[input_method_submit],
+                outputs=[submit_input_text, submit_file_upload]
+            )
 
-    with gr.Tab("Fetch Status"):
-        with gr.Row():
-            with gr.Column(scale=1):
-                fetch_server_url = gr.Textbox(
-                    label="Server URL",
-                    value=os.getenv("SERVER_URL", "http://localhost:8080/api/v1/detection"),
-                    placeholder="Enter the REST API server URL...",
-                )
+            submit_btn = gr.Button("Submit Detection")
 
-        with gr.Row():
-            with gr.Column(scale=1):
-                fetch_request_id = gr.Textbox(
-                    label="Request ID",
-                    placeholder="Enter the Request ID...",
-                )
+            submit_output = gr.JSON(label="Submission Result")
 
-        fetch_btn = gr.Button("Fetch Status")
+            submit_btn.click(
+                submit_detection,
+                inputs=[submit_server_url, submit_input_text, submit_file_upload],
+                outputs=[submit_output],
+                show_progress=True
+            )
 
-        # Define output components
-        fetch_status_output = gr.JSON(label="Detection Status")
-        fetch_verdict_output = gr.DataFrame(headers=["Label", "Probability"], label="Detection Verdict", visible=True)
-        fetch_verdict_message = gr.Markdown("", visible=False)
+        with gr.Tab("Fetch Status"):
+            with gr.Row():
+                with gr.Column(scale=1):
+                    fetch_server_url = gr.Textbox(
+                        label="Server URL",
+                        value=os.getenv("SERVER_URL", "http://localhost:8080/api/v1/detection"),
+                        placeholder="Enter the REST API server URL...",
+                    )
 
-        fetch_btn.click(
-            fetch_status_wrapper,
-            inputs=[fetch_server_url, fetch_request_id],
-            outputs=[fetch_status_output, fetch_verdict_output, fetch_verdict_message],
-            show_progress=True
-        )
+            with gr.Row():
+                with gr.Column(scale=1):
+                    fetch_request_id = gr.Textbox(
+                        label="Request ID",
+                        placeholder="Enter the Request ID...",
+                    )
 
-    # Launch the app
-    demo.launch()
+            fetch_btn = gr.Button("Fetch Status")
+
+            # Define output components
+            fetch_status_output = gr.JSON(label="Detection Status")
+            fetch_verdict_output = gr.DataFrame(headers=["Label", "Probability"], label="Detection Verdict", visible=True)
+            fetch_verdict_message = gr.Markdown("", visible=False)
+
+            fetch_btn.click(
+                fetch_status_wrapper,
+                inputs=[fetch_server_url, fetch_request_id],
+                outputs=[fetch_status_output, fetch_verdict_output, fetch_verdict_message],
+                show_progress=True
+            )
+
+        # Launch the app
+        demo.launch()
