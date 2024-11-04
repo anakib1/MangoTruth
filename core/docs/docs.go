@@ -18,25 +18,29 @@ const docTemplate = `{
         "/detection": {
             "get": {
                 "description": "Fetch the detection status and verdict by requestId.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "summary": "Get the detection status",
                 "parameters": [
                     {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Request ID",
-                        "name": "requestId",
-                        "in": "query",
-                        "required": true
+                        "description": "Detection Query Request",
+                        "name": "detectionQuery",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/modules.DetectionQuery"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.DetectionStatus"
+                            "$ref": "#/definitions/modules.DetectionStatus"
                         }
                     },
                     "400": {
@@ -75,7 +79,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.DetectionRequest"
+                            "$ref": "#/definitions/modules.DetectionRequest"
                         }
                     }
                 ],
@@ -83,7 +87,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.DetectionStatus"
+                            "$ref": "#/definitions/modules.DetectionStatus"
                         }
                     },
                     "400": {
@@ -100,9 +104,25 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "main.DetectionRequest": {
-            "description": "DetectionRequest contains the UUID and content to be analyzed",
+        "modules.DetectionQuery": {
             "type": "object",
+            "required": [
+                "requestId"
+            ],
+            "properties": {
+                "requestId": {
+                    "description": "RequestID is the unique identifier for the detection request\nrequired: true\nexample: f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                    "type": "string",
+                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                }
+            }
+        },
+        "modules.DetectionRequest": {
+            "description": "DetectionRequest contains the request UUID and content to be analyzed",
+            "type": "object",
+            "required": [
+                "requestId"
+            ],
             "properties": {
                 "content": {
                     "description": "Content to be analyzed for detection\nrequired: true\nexample: This is the content to be analyzed.",
@@ -116,10 +136,18 @@ const docTemplate = `{
                 }
             }
         },
-        "main.DetectionStatus": {
+        "modules.DetectionStatus": {
             "description": "DetectionStatus includes the status of the request and the verdict",
             "type": "object",
+            "required": [
+                "requestId"
+            ],
             "properties": {
+                "requestId": {
+                    "description": "RequestID is the unique identifier for the detection request\nrequired: true\nexample: f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                    "type": "string",
+                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                },
                 "status": {
                     "description": "Status is the current status of the detection request\nEnum: \"REJECTED\" \"FAILED\" \"IN_PROGRESS\" \"FINISHED\"\nrequired: true\nexample: IN_PROGRESS",
                     "type": "string",
@@ -129,13 +157,13 @@ const docTemplate = `{
                     "description": "Verdict is the result of the detection (optional)\nIt can be null if no verdict is available yet",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/main.Verdict"
+                            "$ref": "#/definitions/modules.Verdict"
                         }
                     ]
                 }
             }
         },
-        "main.Label": {
+        "modules.Label": {
             "type": "object",
             "properties": {
                 "label": {
@@ -150,14 +178,14 @@ const docTemplate = `{
                 }
             }
         },
-        "main.Verdict": {
+        "modules.Verdict": {
             "type": "object",
             "properties": {
                 "labels": {
                     "description": "Labels with associated probabilities",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/main.Label"
+                        "$ref": "#/definitions/modules.Label"
                     }
                 }
             }
@@ -167,12 +195,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Detection API",
-	Description:      "This is a detection system API to process requests and return detection status.",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -1,7 +1,18 @@
-basePath: /api/v1
 definitions:
-  main.DetectionRequest:
-    description: DetectionRequest contains the UUID and content to be analyzed
+  modules.DetectionQuery:
+    properties:
+      requestId:
+        description: |-
+          RequestID is the unique identifier for the detection request
+          required: true
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        type: string
+    required:
+    - requestId
+    type: object
+  modules.DetectionRequest:
+    description: DetectionRequest contains the request UUID and content to be analyzed
     properties:
       content:
         description: |-
@@ -17,10 +28,19 @@ definitions:
           example: f47ac10b-58cc-4372-a567-0e02b2c3d479
         example: f47ac10b-58cc-4372-a567-0e02b2c3d479
         type: string
+    required:
+    - requestId
     type: object
-  main.DetectionStatus:
+  modules.DetectionStatus:
     description: DetectionStatus includes the status of the request and the verdict
     properties:
+      requestId:
+        description: |-
+          RequestID is the unique identifier for the detection request
+          required: true
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        type: string
       status:
         description: |-
           Status is the current status of the detection request
@@ -31,12 +51,14 @@ definitions:
         type: string
       verdict:
         allOf:
-        - $ref: '#/definitions/main.Verdict'
+        - $ref: '#/definitions/modules.Verdict'
         description: |-
           Verdict is the result of the detection (optional)
           It can be null if no verdict is available yet
+    required:
+    - requestId
     type: object
-  main.Label:
+  modules.Label:
     properties:
       label:
         description: |-
@@ -51,39 +73,36 @@ definitions:
         example: 0.85
         type: number
     type: object
-  main.Verdict:
+  modules.Verdict:
     properties:
       labels:
         description: Labels with associated probabilities
         items:
-          $ref: '#/definitions/main.Label'
+          $ref: '#/definitions/modules.Label'
         type: array
     type: object
-host: localhost:8080
 info:
   contact: {}
-  description: This is a detection system API to process requests and return detection
-    status.
-  title: Detection API
-  version: "1.0"
 paths:
   /detection:
     get:
+      consumes:
+      - application/json
       description: Fetch the detection status and verdict by requestId.
       parameters:
-      - description: Request ID
-        format: uuid
-        in: query
-        name: requestId
+      - description: Detection Query Request
+        in: body
+        name: detectionQuery
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/modules.DetectionQuery'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.DetectionStatus'
+            $ref: '#/definitions/modules.DetectionStatus'
         "400":
           description: Missing requestId parameter
           schema:
@@ -107,14 +126,14 @@ paths:
         name: detectionRequest
         required: true
         schema:
-          $ref: '#/definitions/main.DetectionRequest'
+          $ref: '#/definitions/modules.DetectionRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.DetectionStatus'
+            $ref: '#/definitions/modules.DetectionStatus'
         "400":
           description: Invalid request body
           schema:

@@ -28,12 +28,27 @@ Repository consists of:
 |------|------------------------------------------|---------------------| 
 | GLTR | [link](https://arxiv.org/pdf/1906.04043) | TBD                 |
 
-## Configuration
+## Installation from source
 
 To set up installation on your environment follow these steps:
 
-- TBD
-- TBD
+- Core:
+    - [Install go](https://go.dev/doc/install)
+    - [Install rabbitMQ](https://www.rabbitmq.com/docs/download)
+    - Configure server using `core/config/config-development.yml` file. Extensive configuration reference coming soon
+    - Run `go build ./core/cmd/server`
+    - Run `go run core/cmd/server/main.go`
+- Compute:
+    - TBD
+- Frontend:
+    - [Install Python](https://www.python.org/downloads/release/python-3100/)
+    - [Optional](https://docs.python.org/3/library/venv.html) create venv
+    - pip install -r "frontend/requirements.txt"
+    - python "frontend/app.py"
+
+## Running as container
+
+TBD
 
 ## Documentation
 
@@ -42,5 +57,5 @@ API endpoints are available in `core/docs/swagger.json` file.
 To generate docs for core endpoints run the following command:
 
 ```bash 
- swag init --dir core/main/ --output core/docs
+ swag init -g ./core/cmd/server/main.go --output ./core/docs
 ```

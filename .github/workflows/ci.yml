@@ -62,7 +62,7 @@ jobs:
 
       - name: Build go subproject
         if: matrix.subproject == 'core'
-        run: go build ./core/main
+        run: go build ./core/cmd/server
       - name: Build python subproject
         if: matrix.subproject != 'core'
         run: echo "No build step required for ${{ matrix.subproject }}"
