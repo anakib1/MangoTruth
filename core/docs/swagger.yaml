@@ -21,15 +21,6 @@ definitions:
           example: This is the content to be analyzed.
         example: This is the content to be analyzed.
         type: string
-      requestId:
-        description: |-
-          RequestID is the unique identifier for the detection request
-          required: true
-          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-        type: string
-    required:
-    - requestId
     type: object
   modules.DetectionStatus:
     description: DetectionStatus includes the status of the request and the verdict
@@ -84,7 +75,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /detection:
+  /api/v1/detection:
     get:
       consumes:
       - application/json

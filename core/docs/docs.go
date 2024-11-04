@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/detection": {
+        "/api/v1/detection": {
             "get": {
                 "description": "Fetch the detection status and verdict by requestId.",
                 "consumes": [
@@ -120,19 +120,11 @@ const docTemplate = `{
         "modules.DetectionRequest": {
             "description": "DetectionRequest contains the request UUID and content to be analyzed",
             "type": "object",
-            "required": [
-                "requestId"
-            ],
             "properties": {
                 "content": {
                     "description": "Content to be analyzed for detection\nrequired: true\nexample: This is the content to be analyzed.",
                     "type": "string",
                     "example": "This is the content to be analyzed."
-                },
-                "requestId": {
-                    "description": "RequestID is the unique identifier for the detection request\nrequired: true\nexample: f47ac10b-58cc-4372-a567-0e02b2c3d479",
-                    "type": "string",
-                    "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                 }
             }
         },
