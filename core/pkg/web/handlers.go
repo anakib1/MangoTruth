@@ -2,6 +2,7 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"mango_truth/core/pkg/modules"
 	"net/http"
 	"time"
@@ -16,7 +17,7 @@ import (
 // @Success 200 {object} modules.DetectionStatus
 // @Failure 400 {object} map[string]string "Missing requestId parameter"
 // @Failure 404 {object} map[string]string "Request not found"
-// @Router /detection [get]
+// @Router /api/v1/detection [get]
 func (r *MangoRest) GetDetection(c *gin.Context) {
 	var req modules.DetectionQuery
 	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
@@ -24,10 +25,7 @@ func (r *MangoRest) GetDetection(c *gin.Context) {
 		return
 	}
 
-	r.waitFromEngine(c, modules.DetectionQueryEx{
-		DetectionQuery: req,
-		ClientToServer: &modules.ClientToServer{},
-	})
+	r.waitFromEngine(c, modules.ClientToServer{Msg: req})
 }
 
 // PutDetection handles PUT /api/v1/detection
@@ -38,7 +36,7 @@ func (r *MangoRest) GetDetection(c *gin.Context) {
 // @Param detectionRequest body modules.DetectionRequest true "Detection Request"
 // @Success 200 {object} modules.DetectionStatus
 // @Failure 400 {object} map[string]string "Invalid request body"
-// @Router /detection [put]
+// @Router /api/v1/detection [put]
 func (r *MangoRest) PutDetection(c *gin.Context) {
 	var req modules.DetectionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -46,16 +44,20 @@ func (r *MangoRest) PutDetection(c *gin.Context) {
 		return
 	}
 
-	r.waitFromEngine(c, modules.DetectionRequestEx{
-		DetectionRequest: req,
-		ClientToServer:   &modules.ClientToServer{},
-	})
+	if req.RequestId != uuid.Nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "RequestId will be specified by server"})
+		return
+	}
+
+	req.RequestId = uuid.New()
+
+	r.waitFromEngine(c, modules.ClientToServer{Msg: req})
 
 }
 
-func (r *MangoRest) waitFromEngine(c *gin.Context, req modules.Callbacker) {
+func (r *MangoRest) waitFromEngine(c *gin.Context, req modules.ClientToServer) {
 	resp := make(chan modules.DetectionStatus)
-	req.DefineCallback(resp)
+	req.Ret = resp
 
 	r.engine <- req
 

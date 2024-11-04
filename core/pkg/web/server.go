@@ -4,14 +4,15 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"mango_truth/core/pkg/modules"
 )
 
 type MangoRest struct {
 	*gin.Engine
-	engine chan<- any
+	engine chan<- modules.ClientToServer
 }
 
-func NewMangoRest(engine chan<- any) *MangoRest {
+func NewMangoRest(engine chan<- modules.ClientToServer) *MangoRest {
 	r := &MangoRest{
 		Engine: gin.Default(), // Initialize the Gin engine
 		engine: engine,
