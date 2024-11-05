@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 	"log/slog"
 	"os"
+	"strings"
 )
 
 type Config struct {
@@ -110,6 +111,7 @@ func LoadConfig(filename string, fileType string) (*viper.Viper, error) {
 	v.SetConfigName(filename)
 	v.AddConfigPath(".")
 	v.AutomaticEnv()
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	err := v.ReadInConfig()
 	if err != nil {
