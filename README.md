@@ -45,22 +45,35 @@ To set up installation on your environment follow these steps:
     - [Optional](https://docs.python.org/3/library/venv.html) create venv
     - pip install -r "frontend/requirements.txt"
     - python "frontend/app.py"
-- Docker setup (front-end only):
-    1. Build docker image (Your PWD has to be in the frontend directory)
-    ```
-     docker build -t front-end-mango-truth .
-    ```
-    2. Run docker container
-    ```
-     docker run -d --name front-end-mango-truth -p 7860:7860 front-end-mango-truth 
-    ```
-   3. Access the Gradio front-end using http://127.0.0.1:7860/ or http://localhost:7860/
-   
-  
 
 ## Running as container
 
-TBD
+- Frontend
+    1. Build docker image (Your PWD has to be in the `frontend` directory)
+    ```bash
+     docker build -t front-end-mango-truth .
+    ```
+    2. Run docker container
+    ```bash
+     docker run -d --name front-end-mango-truth -p 7860:7860 front-end-mango-truth 
+    ```
+    3. Access the Gradio front-end using http://127.0.0.1:7860/ or http://localhost:7860/
+- Core (bash)
+    1. Build docker image (Your PWD has to be in the **project root** directory)
+    ```bash
+     docker build --tag mango-truth-core:1.0.0 --file ./core/Dockerfile .
+    ```
+    2. Run docker container
+    ```bash
+     docker run -d --name core -p 8080:8080 -e COMPUTE_HOST='host.docker.internal' mango-truth-core:1.0.0
+    ```
+    3. Access core using http://127.0.0.1:8080/ or http://localhost:8080/
+- Core (With makefile)
+  - Follow `MAKEFILE` commands to run core+rabbitmq in separate docker network. 
+    - `network`
+    - `run-rabbitmq`
+    - `run-core`
+  - Access core using http://127.0.0.1:8080/ or http://localhost:8080/
 
 ## Documentation
 
