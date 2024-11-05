@@ -36,6 +36,8 @@ To set up installation on your environment follow these steps:
     - [Install go](https://go.dev/doc/install)
     - [Install rabbitMQ](https://www.rabbitmq.com/docs/download)
     - Configure server using `core/config/config-development.yml` file. Extensive configuration reference coming soon
+    - [Install sqlboiler](https://github.com/volatiletech/sqlboiler)
+    - Run `sqlboiler --wipe --output .\core\pkg\core\storage\models psql`
     - Run `go build ./core/cmd/server`
     - Run `go run core/cmd/server/main.go`
 - Compute:

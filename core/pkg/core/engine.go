@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"mango_truth/core/pkg"
 	"mango_truth/core/pkg/modules"
+	"mango_truth/core/pkg/core/storage"
 	"time"
 )
 
@@ -12,7 +13,7 @@ type MangoEngine struct {
 	feed        <-chan modules.ClientToServer
 	computeSink chan<- modules.DetectionRequest
 	computeFeed <-chan modules.DetectionStatus
-	storage     *Storage
+	storage     *storage.Storage
 	cfg         pkg.EngineConfig
 }
 
@@ -30,7 +31,7 @@ func NewMangoEngine(cfg pkg.EngineConfig) (
 		feed:        engineFeed,
 		computeSink: computeSink,
 		computeFeed: computeFeed,
-		storage:     &Storage{},
+		storage:     storage.NewStorage(),
 		cfg:         cfg}
 	return
 }
@@ -49,18 +50,18 @@ func (e *MangoEngine) Work() {
 						RequestId: req.RequestId,
 						Status:    "PENDING",
 					}
-					e.storage.updStatus(status)
+					e.storage.UpdStatus(status)
 					cts.Ret <- status
 
 				case modules.DetectionQuery:
-					status := e.storage.getStatus(req.RequestId)
+					status := e.storage.GetStatus(req.RequestId)
 					cts.Ret <- status
 				default:
 					slog.Warn(fmt.Sprintf("Received message of unexepcted type. Type = %T", req))
 				}
 			}
 		case upd := <-e.computeFeed:
-			e.storage.updStatus(upd)
+			e.storage.UpdStatus(upd)
 
 		case <-time.After(time.Second * time.Duration(e.cfg.IdlePeriodSeconds)):
 			slog.Debug("Engine idling..")

@@ -1,0 +1,6 @@
+[psql]
+dbname  = "mango_truth"
+user    = "postgres"
+pass    = "postgres"
+host    = "localhost"
+sslmode = "disable"
