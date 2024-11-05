@@ -8,7 +8,7 @@ engine:
   computeBufferSize: 100
   idlePeriodSeconds: 5
 compute:
-  host: "localhost"
+  host: "rabbitmq"
   port: "5672"
   username: "guest"
   password: "guest"
