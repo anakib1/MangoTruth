@@ -4,10 +4,8 @@ import pandas as pd
 from io import BytesIO
 from PyPDF2 import PdfReader
 import os
-import uuid
 import json
 import mimetypes
-
 
 def extract_text_from_file(file):
     if file is None:
@@ -71,12 +69,8 @@ def submit_detection(server_url, input_text, file):
         raise gr.Error("Please enter a valid server URL.")
 
     try:
-        # Generate a unique requestId
-        request_id = str(uuid.uuid4())
-
-        # Prepare the JSON payload
+        # Prepare the JSON payload without requestId
         data = {
-            "requestId": request_id,
             "content": input_text
         }
 
@@ -90,12 +84,8 @@ def submit_detection(server_url, input_text, file):
             except json.JSONDecodeError as e:
                 raise gr.Error(f"Invalid JSON response from server: {e}")
 
-            # Validate response structure
-            if data_response.get("requestId") == request_id:
-                status = data_response.get("status")
-                return {"Request ID": request_id, "Status": status}
-            else:
-                raise gr.Error("Mismatch in response requestId.")
+            # Return the full JSON response
+            return data_response
         else:
             try:
                 error_msg = response.json().get("error", "An error occurred.")
@@ -115,7 +105,7 @@ def fetch_status_wrapper(server_url, request_id):
         raise gr.Error("Please enter a valid server URL.")
 
     try:
-        # Prepare the JSON payload
+        # Prepare the JSON payload with requestId
         data = {
             "requestId": request_id
         }
@@ -130,49 +120,8 @@ def fetch_status_wrapper(server_url, request_id):
             except json.JSONDecodeError as e:
                 raise gr.Error(f"Invalid JSON response from server: {e}")
 
-            # Extract status and verdict
-            status = data_response.get("status")
-            verdict = data_response.get("verdict")
-
-            # Prepare the JSON output
-            full_response = {
-                "requestId": data_response.get("requestId"),
-                "status": status,
-                "verdict": verdict
-            }
-
-            # Handle verdict labels
-            if verdict and verdict.get("labels") is not None:
-                labels = verdict.get("labels", [])
-                if isinstance(labels, list) and len(labels) > 0:
-                    # Filter out any None or improperly formatted entries
-                    valid_labels = [
-                        label for label in labels
-                        if isinstance(label, dict) and 'label' in label and 'probability' in label
-                    ]
-                    if valid_labels:
-                        df = pd.DataFrame(valid_labels, columns=["Label", "Probability"])
-                        verdict_message = ""
-                    else:
-                        df = pd.DataFrame(columns=["Label", "Probability"])
-                        verdict_message = "Verdict is currently empty."
-                else:
-                    df = pd.DataFrame(columns=["Label", "Probability"])
-                    verdict_message = "Verdict is currently empty."
-            else:
-                df = pd.DataFrame(columns=["Label", "Probability"])
-                verdict_message = "Verdict not available yet."
-
-            # Prepare the verdict message
-            if verdict_message:
-                verdict_message_md = f"**{verdict_message}**"
-                verdict_message_visibility = True
-            else:
-                verdict_message_md = ""
-                verdict_message_visibility = False
-
-            # Return all outputs
-            return full_response, df, gr.update(value=verdict_message_md, visible=verdict_message_visibility)
+            # Return the entire JSON response
+            return data_response
 
         elif response.status_code == 400:
             try:
@@ -195,6 +144,26 @@ def fetch_status_wrapper(server_url, request_id):
 
     except requests.exceptions.RequestException as e:
         raise gr.Error(f"An error occurred: {e}")
+
+
+def process_fetch_response(response):
+    """
+    Processes the JSON response from the server.
+    - Displays the entire JSON in the Detection Status component.
+    - Extracts labels and probabilities for the Detection Results table.
+    - Shows a message if no labels are available.
+    """
+    # Display the entire JSON response
+    detection_status = response
+
+    # Extract labels for the table
+    labels = response.get("verdict", {}).get("labels")
+    if labels:
+        table_data = [{"Label": label["label"], "Probability": label["probability"]} for label in labels]
+        return detection_status, table_data, gr.update(visible=False)
+    else:
+        # No labels available
+        return detection_status, None, gr.update(value="No labels available yet.", visible=True)
 
 
 if __name__ == '__main__':
@@ -232,13 +201,11 @@ if __name__ == '__main__':
                         visible=False
                     )
 
-
             def toggle_input_submit(input_method):
                 if input_method == "Paste Text":
                     return gr.update(visible=True), gr.update(visible=False)
                 elif input_method == "Upload File":
                     return gr.update(visible=False), gr.update(visible=True)
-
 
             input_method_submit.change(
                 toggle_input_submit,
@@ -276,16 +243,30 @@ if __name__ == '__main__':
             fetch_btn = gr.Button("Fetch Status")
 
             # Define output components
-            fetch_status_output = gr.JSON(label="Detection Status")
-            fetch_verdict_output = gr.DataFrame(headers=["Label", "Probability"], label="Detection Verdict", visible=True)
-            fetch_verdict_message = gr.Markdown("", visible=False)
+            fetch_detection_status = gr.JSON(
+                label="Detection Status"
+                # Removed 'interactive=False' to fix the TypeError
+            )
+            fetch_table = gr.DataFrame(
+                headers=["Label", "Probability"],
+                label="Detection Results",
+                interactive=False
+            )
+            fetch_message = gr.Markdown(
+                value="",
+                label="Status Message",
+                visible=False
+            )
 
             fetch_btn.click(
-                fetch_status_wrapper,
+                lambda server_url, request_id: process_fetch_response(fetch_status_wrapper(server_url, request_id)),
                 inputs=[fetch_server_url, fetch_request_id],
-                outputs=[fetch_status_output, fetch_verdict_output, fetch_verdict_message],
+                outputs=[fetch_detection_status, fetch_table, fetch_message],
                 show_progress=True
             )
 
-        # Launch the app
-        demo.launch()
+    server_name = os.getenv("GRADIO_SERVER_NAME", "0.0.0.0")
+    server_port = int(os.getenv("GRADIO_SERVER_PORT", "7860"))
+
+    # Launch the app
+    demo.launch(server_name=server_name, server_port=server_port)

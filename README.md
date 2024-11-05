@@ -45,6 +45,18 @@ To set up installation on your environment follow these steps:
     - [Optional](https://docs.python.org/3/library/venv.html) create venv
     - pip install -r "frontend/requirements.txt"
     - python "frontend/app.py"
+- Docker setup (front-end only):
+    1. Build docker image (Your PWD has to be in the frontend directory)
+    ```
+     docker build -t front-end-mango-truth .
+    ```
+    2. Run docker container
+    ```
+     docker run -d --name front-end-mango-truth -p 7860:7860 front-end-mango-truth 
+    ```
+   3. Access the Gradio front-end using http://127.0.0.1:7860/ or http://localhost:7860/
+   
+  
 
 ## Running as container
 
