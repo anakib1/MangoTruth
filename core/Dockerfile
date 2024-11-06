@@ -1,9 +1,10 @@
 FROM golang:bookworm
 
 WORKDIR /mango
-COPY ./core ./core
-COPY go.* .
+COPY . .
+
+RUN ls
 
 RUN go mod tidy
 
-CMD ["go", "run", "./core/cmd/server/main.go"]
+CMD ["go", "run", "./cmd/server/main.go"]
