@@ -2,7 +2,7 @@ package core
 
 import (
 	"github.com/google/uuid"
-	"mango_truth/core/pkg/modules"
+	"mango_truth/pkg/modules"
 	"sync"
 )
 

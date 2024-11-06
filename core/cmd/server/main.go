@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 	"log/slog"
-	_ "mango_truth/core/docs"
-	"mango_truth/core/pkg"
-	"mango_truth/core/pkg/core"
-	"mango_truth/core/pkg/utils"
-	"mango_truth/core/pkg/web"
+	_ "mango_truth/docs"
+	"mango_truth/pkg"
+	"mango_truth/pkg/core"
+	"mango_truth/pkg/utils"
+	"mango_truth/pkg/web"
 )
 
 func main() {
