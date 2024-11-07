@@ -7,6 +7,8 @@ import os
 import json
 import mimetypes
 
+SERVER_URL = os.getenv('SERVER_URL', 'http://localhost:8080')
+
 def extract_text_from_file(file):
     if file is None:
         return "", None
@@ -176,7 +178,7 @@ if __name__ == '__main__':
                 with gr.Column(scale=1):
                     submit_server_url = gr.Textbox(
                         label="Server URL",
-                        value=os.getenv("SERVER_URL", "http://localhost:8080/api/v1/detection"),
+                        value=SERVER_URL + "/api/v1/detection",
                         placeholder="Enter the REST API server URL...",
                     )
 
@@ -229,7 +231,7 @@ if __name__ == '__main__':
                 with gr.Column(scale=1):
                     fetch_server_url = gr.Textbox(
                         label="Server URL",
-                        value=os.getenv("SERVER_URL", "http://localhost:8080/api/v1/detection"),
+                        value=SERVER_URL + "/api/v1/detection",
                         placeholder="Enter the REST API server URL...",
                     )
 

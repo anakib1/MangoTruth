@@ -47,7 +47,15 @@ To set up installation on your environment follow these steps:
     - python "frontend/app.py"
 
 ## Running as container
+<h3>Docker compose setup</h2>
+Execute the following command from the project directory
+```
+ docker-compose up --build -d
+```
+1) The front-end is accessible from http://localhost:7860/
+2) The back-end is accessible from http://core:8080
 
+<h3>Docker setup</h2>
 - Frontend
     1. Build docker image (Your PWD has to be in the `frontend` directory)
     ```bash
