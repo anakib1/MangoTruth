@@ -86,11 +86,11 @@ func MustGetConfig() *Config {
 
 func getConfigPath(env string) string {
 	if env == "docker" {
-		return "/core/config/config-docker"
+		return "./config/config-docker"
 	} else if env == "production" {
-		return "/core/config/config-production"
+		return "./config/config-production"
 	} else {
-		return "/core/config/config-development"
+		return "./config/config-development"
 	}
 }
 

@@ -3,7 +3,7 @@ package web
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"mango_truth/core/pkg/modules"
+	"mango_truth/pkg/modules"
 	"net/http"
 	"time"
 )

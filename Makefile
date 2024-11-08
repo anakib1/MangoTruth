@@ -6,5 +6,7 @@ run-rabbitmq:
 	docker run -d --network mango-net --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:4.0-management
 
 run-core:
-	docker build --tag mango-truth-core:1.0.0 --file ./core/Dockerfile .
+	cd ./core
+	docker build --tag mango-truth-core:1.0.0 .
 	docker run -d --network mango-net --name core -p 8080:8080 -e COMPUTE_HOST='rabbitmq' mango-truth-core:1.0.0
+	cd ../

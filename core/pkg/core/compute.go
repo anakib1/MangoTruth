@@ -5,8 +5,8 @@ import (
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log/slog"
-	"mango_truth/core/pkg"
-	"mango_truth/core/pkg/modules"
+	"mango_truth/pkg"
+	"mango_truth/pkg/modules"
 	"time"
 )
 
