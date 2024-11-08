@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"encoding/json"
 	"github.com/google/uuid"
 )
 
@@ -21,6 +22,18 @@ type DetectionRequest struct {
 	// required: true
 	// example: This is the content to be analyzed.
 	Content string `json:"content" example:"This is the content to be analyzed."`
+}
+
+// MarshalJSON This is crutch to pass RequestId to RabbitMQ, but to ignore it from incoming messages and swagger.
+func (dr DetectionRequest) MarshalJSON() ([]byte, error) {
+	type Alias DetectionRequest
+	return json.Marshal(&struct {
+		RequestId uuid.UUID `json:"request_id"`
+		*Alias
+	}{
+		RequestId: dr.RequestId,
+		Alias:     (*Alias)(&dr),
+	})
 }
 
 // DetectionStatus represents the status and result of the detection
