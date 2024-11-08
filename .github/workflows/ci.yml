@@ -72,7 +72,6 @@ jobs:
       - name: Run GO tests for ${{ matrix.subproject }}
         if: matrix.subproject == 'core'
         run: |
-          cd ./core
           go test ./core/tests/
       - name: Run Python tests for ${{ matrix.subproject }}
         if: matrix.subproject != 'core'
