@@ -57,7 +57,7 @@ Execute the following command from the project directory
 ```
 
 1) The front-end is accessible from http://localhost:7860/
-2) The back-end is accessible from http://localhost:8080/
+2) The back-end is accessible from http://localhost:8080/ or http://core:8080/
 
 ### Docker setup
 
