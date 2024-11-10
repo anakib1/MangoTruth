@@ -3,7 +3,7 @@ package utils
 import (
 	"errors"
 	"log/slog"
-	"mango_truth/core/pkg"
+	"mango_truth/pkg"
 	"os"
 	"strings"
 )

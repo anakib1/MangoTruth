@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 	"log/slog"
 	"os"
+	"strings"
 )
 
 type Config struct {
@@ -85,11 +86,11 @@ func MustGetConfig() *Config {
 
 func getConfigPath(env string) string {
 	if env == "docker" {
-		return "/core/config/config-docker"
+		return "./config/config-docker"
 	} else if env == "production" {
-		return "/core/config/config-production"
+		return "./config/config-production"
 	} else {
-		return "/core/config/config-development"
+		return "./config/config-development"
 	}
 }
 
@@ -110,6 +111,7 @@ func LoadConfig(filename string, fileType string) (*viper.Viper, error) {
 	v.SetConfigName(filename)
 	v.AddConfigPath(".")
 	v.AutomaticEnv()
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	err := v.ReadInConfig()
 	if err != nil {

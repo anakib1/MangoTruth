@@ -50,6 +50,80 @@ To set up installation on your environment follow these steps:
 
 ## Running as container
 
+### Docker compose setup
+
+Execute the following command from the project directory
+
+```
+ docker-compose up --build -d
+```
+
+1) The front-end is accessible from http://localhost:7860/
+2) The back-end is accessible from http://localhost:8080/ or http://core:8080/
+
+### Docker setup
+
+- Frontend
+    1. Build docker image (Your PWD has to be in the `frontend` directory)
+    ```bash
+     docker build -t front-end-mango-truth .
+    ```
+    2. Run docker container
+    ```bash
+     docker run -d --name front-end-mango-truth -p 7860:7860 front-end-mango-truth 
+    ```
+    3. Access the Gradio front-end using http://127.0.0.1:7860/ or http://localhost:7860/
+- Core (bash)
+    1. Build docker image (Your PWD has to be in the **project root** directory)
+    ```bash
+     docker build --tag mango-truth-core:1.0.0 --file ./core/Dockerfile .
+    ```
+    2. Run docker container
+    ```bash
+     docker run -d --name core -p 8080:8080 -e COMPUTE_HOST='host.docker.internal' mango-truth-core:1.0.0
+    ```
+    3. Access core using http://127.0.0.1:8080/ or http://localhost:8080/
+- Core (With makefile)
+    - Follow `MAKEFILE` commands to run core+rabbitmq in separate docker network.
+        - `network`
+        - `run-rabbitmq`
+        - `run-core`
+    - Access core using http://127.0.0.1:8080/ or http://localhost:8080/
+
+## Configuration
+
+Generally, all variables mentioned here follow uppercase naming with "_" as delimiter for env variable and camelcase for
+`.yml` config
+files. Example:
+
+Specifing `SERVER_PORT=8080` in env is equivalent to specifying in corresponding config location.
+
+```yaml
+server:
+  port: 8080
+```
+
+### Core
+
+Config is resolved by path `./core/config/config-development.yml`. TODO: Add option to override location.
+
+| Variable           | Usage                                | Default   |
+|--------------------|--------------------------------------|-----------|
+| `server.port`      | port of server on which core listens | 8080      |
+| `compute.host`     | host of RabbitMQ                     | 127.0.0.1 |
+| `compute.username` | credentials for RabbitMQ             | guest     |
+| `compute.password` | credentials for RabbitMQ             | guest     |
+
+## Frontend
+
+| Variable             | Usage                                      | Default               |
+|----------------------|--------------------------------------------|-----------------------|
+| `server.url`         | url of server on which **compute** listens | http://localhost:8080 |
+| `gradio.server.name` | URL on which frontend listens              | 127.0.0.1             |
+| `gradio.server.port` | port on which frontend listens             | 7860                  |
+
+## Compute
+
 TBD
 
 ## Documentation

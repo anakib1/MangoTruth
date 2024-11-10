@@ -3,9 +3,9 @@ package core
 import (
 	"fmt"
 	"log/slog"
-	"mango_truth/core/pkg"
-	"mango_truth/core/pkg/modules"
-	"mango_truth/core/pkg/core/storage"
+	"mango_truth/pkg"
+	"mango_truth/pkg/modules"
+	"mango_truth/pkg/core/storage"
 	"time"
 )
 
