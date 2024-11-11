@@ -52,7 +52,7 @@ To set up installation on your environment follow these steps:
 
 Execute the following command from the project directory
 
-```
+```bash
  docker-compose up --build -d
 ```
 

@@ -1,0 +1,52 @@
+name: Deploy to EC2 on Release Branch Commit
+
+on:
+  push:
+    branches:
+      - 'release-*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Read current version
+        id: get_version
+        run: |
+          if [ ! -f VERSION ]; then echo "0.1.0" > VERSION; fi
+          echo "Current version: $(cat VERSION)"
+          echo "version=$(cat VERSION)" >> $GITHUB_ENV
+
+      - name: Increment version
+        id: increment_version
+        run: |
+          IFS='.' read -r -a parts <<< "$VERSION"
+          patch_version=$((parts[2] + 1))
+          new_version="${parts[0]}.${parts[1]}.$patch_version"
+          echo $new_version > VERSION
+          echo "New version: $new_version"
+          echo "new_version=$new_version" >> $GITHUB_ENV
+
+      - name: Commit new version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "Bump version to ${{ env.new_version }}"
+          git push origin HEAD:${{ github.ref }}
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cd ./MangoTruth
+            sudo systemctl stop mango-truth
+            git pull origin ${{ github.ref }}
+            sudo systemctl start mango-truth
