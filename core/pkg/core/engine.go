@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"mango_truth/pkg"
 	"mango_truth/pkg/modules"
-	"mango_truth/pkg/core/storage"
+	"mango_truth/pkg/storage"
 	"time"
 )
 

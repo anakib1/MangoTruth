@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"mango_truth/pkg/core/storage/models"
+	"mango_truth/pkg/storage/models"
 	"mango_truth/pkg/modules"
 	"mango_truth/pkg"
 
