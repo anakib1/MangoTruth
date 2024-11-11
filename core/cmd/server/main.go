@@ -16,7 +16,7 @@ func main() {
 	utils.ConfigureLogging(&cfg.Logger)
 	slog.Info("Running with config:", "config", cfg)
 
-	engine, requests, statuses, restToEngine := core.NewMangoEngine(cfg.Engine)
+	engine, requests, statuses, restToEngine := core.NewMangoEngine(cfg.Engine, cfg.Storage)
 	go engine.Work()
 	router := core.NewComputeRouter(cfg.Compute, requests, statuses)
 	go router.Work()
