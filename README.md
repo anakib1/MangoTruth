@@ -55,6 +55,7 @@ To set up installation on your environment follow these steps:
 Execute the following command from the project directory
 
 ```
+ docker volume create storage
  docker-compose up --build -d
 ```
 

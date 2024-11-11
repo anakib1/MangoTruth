@@ -85,8 +85,15 @@ services:
       POSTGRES_USER: mango-user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mango-db
+    volumes:
+     - storage:/var/lib/postgresql/data
 
 
 networks:
   mango-net:
     driver: bridge
+
+
+volumes:
+  storage:
+    external: true
