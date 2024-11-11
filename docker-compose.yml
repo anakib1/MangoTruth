@@ -75,7 +75,7 @@ services:
 
   postgres:
     build:
-      context: ./core/pkg/core/storage/docker
+      context: ./core/pkg/storage/docker
       dockerfile: Dockerfile
     networks:
       - mango-net
