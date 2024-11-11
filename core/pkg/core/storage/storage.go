@@ -2,11 +2,13 @@ package storage
 
 import (
 	"context"
-	"fmt"
-	"encoding/json"
 	"database/sql"
+	"encoding/json"
+	"fmt"
+	"log/slog"
 	"mango_truth/pkg/core/storage/models"
 	"mango_truth/pkg/modules"
+
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/volatiletech/null/v8"
@@ -50,7 +52,8 @@ func (s *Storage) GetStatus(id uuid.UUID) modules.DetectionStatus {
 	case sql.ErrNoRows:
 		return modules.DetectionStatus{RequestId: id, Status: "UNKNOWN",}
 	default:
-		panic(fmt.Sprintf("Error in FindDetectionStatus, error: %s", err.Error()))
+		slog.Error("Error in FindDetectionStatus", "error-msg", err.Error())
+		return modules.DetectionStatus{RequestId: id, Status: "UNKNOWN",}
 	}
 	request_id, err := uuid.Parse(status.RequestID)
 	if err != nil {
