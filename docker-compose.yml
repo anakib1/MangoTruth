@@ -34,6 +34,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      postgres:
+        condition: service_started
 #    healthcheck:
 #      test: ["CMD", "curl", "-f", "http://localhost:8080/api/"]
 #      interval: 30s
@@ -68,6 +70,20 @@ services:
 #      retries: 3
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  postgres:
+    build:
+      context: ./core/pkg/core/storage/docker
+      dockerfile: Dockerfile
+    networks:
+      - mango-net
+    container_name: postgres
+    environment:
+      POSTGRES_USER: mango-user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mango-db
+
+
 networks:
   mango-net:
     driver: bridge
