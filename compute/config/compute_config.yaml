@@ -1,0 +1,12 @@
+rabbitmq:
+  source_queue_name: "requests_queue"
+  response_queue_name: "responses_queue"
+  host: "localhost"
+  port: 5672
+detectors:
+  - name: "mock_spam_detector"
+    labels: ["spam", "not_spam"]
+  - name: "mock_language_detector"
+    labels: ["english", "spanish", "french"]
+  - name: "mock_detector_name"
+    labels: ["AI", "Human"]
