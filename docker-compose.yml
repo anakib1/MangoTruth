@@ -78,6 +78,7 @@ services:
     networks:
       - mango-net
     container_name: postgres
+    image: postgres:1.0
     environment:
       POSTGRES_USER: mango-user
       POSTGRES_PASSWORD: password
