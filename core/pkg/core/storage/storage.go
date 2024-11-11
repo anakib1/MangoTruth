@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"mango_truth/pkg/core/storage/models"
 	"mango_truth/pkg/modules"
+	"mango_truth/pkg"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
@@ -17,14 +18,15 @@ import (
 
 type Storage struct {
 	db boil.ContextExecutor
+	cfg pkg.StorageConfig
 }
 
-func NewStorage() *Storage {
-	db, err := sql.Open("postgres", "dbname=mango-db host=postgres user=mango-user password=password sslmode=disable")
+func NewStorage(cfg pkg.StorageConfig) *Storage {
+	db, err := sql.Open(cfg.DriverName, fmt.Sprintf("dbname=%s host=%s user=%s password=%s sslmode=disable", cfg.DatabaseName, cfg.HostName, cfg.UserName, cfg.Password))
 	if err != nil {
 		panic(fmt.Sprintf("Can not connect to the database: %s", err.Error()))
 	}
-	return &Storage{db: db}
+	return &Storage{db: db, cfg: cfg}
 }
 
 func (s *Storage) UpdStatus(status modules.DetectionStatus) {

@@ -28,7 +28,9 @@ services:
       - "8080:8080"
     environment:
       COMPUTE_HOST: rabbitmq
-
+      POSTGRES_USER: mango-user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mango-db
     networks:
       - mango-net
     depends_on:

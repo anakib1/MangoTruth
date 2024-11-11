@@ -13,6 +13,7 @@ type Config struct {
 	Engine  EngineConfig
 	Logger  LoggerConfig
 	Server  ServerConfig
+	Storage StorageConfig
 }
 
 type ServerConfig struct {
@@ -40,6 +41,14 @@ type LoggerConfig struct {
 	Format string
 }
 
+type StorageConfig struct {
+	DatabaseName string
+	UserName string
+	Password string
+	DriverName string
+	HostName string
+}
+
 func DefaultConfig() Config {
 	return Config{
 		Engine: EngineConfig{
@@ -61,6 +70,13 @@ func DefaultConfig() Config {
 			Format: "json",
 		},
 		Server: ServerConfig{Port: "8080"},
+		Storage: StorageConfig{
+			DatabaseName: "mango-db",
+			UserName: "mango-user",
+			Password: "password",
+			DriverName: "postgres",
+			HostName: "postgres",
+		},
 	}
 }
 

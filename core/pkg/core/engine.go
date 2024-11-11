@@ -17,22 +17,22 @@ type MangoEngine struct {
 	cfg         pkg.EngineConfig
 }
 
-func NewMangoEngine(cfg pkg.EngineConfig) (
+func NewMangoEngine(enginsCfg pkg.EngineConfig, storageCfg pkg.StorageConfig) (
 	engine *MangoEngine,
 	computeSink chan modules.DetectionRequest,
 	computeFeed chan modules.DetectionStatus,
 	engineFeed chan modules.ClientToServer) {
 
-	engineFeed = make(chan modules.ClientToServer, cfg.FeedBufferSize)
-	computeSink = make(chan modules.DetectionRequest, cfg.ComputeBufferSize)
-	computeFeed = make(chan modules.DetectionStatus, cfg.ComputeBufferSize)
+	engineFeed = make(chan modules.ClientToServer, enginsCfg.FeedBufferSize)
+	computeSink = make(chan modules.DetectionRequest, enginsCfg.ComputeBufferSize)
+	computeFeed = make(chan modules.DetectionStatus, enginsCfg.ComputeBufferSize)
 
 	engine = &MangoEngine{
 		feed:        engineFeed,
 		computeSink: computeSink,
 		computeFeed: computeFeed,
-		storage:     storage.NewStorage(),
-		cfg:         cfg}
+		storage:     storage.NewStorage(storageCfg),
+		cfg:         enginsCfg}
 	return
 }
 
