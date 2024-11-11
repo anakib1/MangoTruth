@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"mango_truth/pkg"
 	"mango_truth/pkg/modules"
+	"mango_truth/pkg/storage/models"
 	"time"
 )
 
@@ -73,12 +74,12 @@ func (c *ComputeRouter) Work() {
 				"msg", msg)
 			req, err := json.Marshal(msg)
 			if err != nil {
-				c.sink <- modules.DetectionStatus{Status: "PARSING_FAILED"}
+				c.sink <- modules.DetectionStatus{Status: models.StatusPARSING_FAILED}
 				continue
 			}
 			kerr := c.rCh.Publish("", c.rSinkQ.Name, false, false, amqp.Publishing{ContentType: "application/json", Body: req})
 			if kerr != nil {
-				c.sink <- modules.DetectionStatus{Status: "TRANSPORT_FAILED"}
+				c.sink <- modules.DetectionStatus{Status: models.StatusTRANSPORT_FAILED}
 			}
 		case msg := <-c.rFeed:
 			slog.Debug("Compute rFeed",

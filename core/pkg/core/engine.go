@@ -6,6 +6,7 @@ import (
 	"mango_truth/pkg"
 	"mango_truth/pkg/modules"
 	"mango_truth/pkg/storage"
+	"mango_truth/pkg/storage/models"
 	"time"
 )
 
@@ -48,7 +49,7 @@ func (e *MangoEngine) Work() {
 					e.computeSink <- req
 					status := modules.DetectionStatus{
 						RequestId: req.RequestId,
-						Status:    "PENDING",
+						Status:    models.StatusPENDING,
 					}
 					e.storage.UpdStatus(status)
 					cts.Ret <- status

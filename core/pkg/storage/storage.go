@@ -52,10 +52,10 @@ func (s *Storage) GetStatus(id uuid.UUID) modules.DetectionStatus {
 	case nil:
 		// Do nothing
 	case sql.ErrNoRows:
-		return modules.DetectionStatus{RequestId: id, Status: "UNKNOWN",}
+		return modules.DetectionStatus{RequestId: id, Status: models.StatusUNKNOWN,}
 	default:
 		slog.Error("Error in FindDetectionStatus", "error-msg", err.Error())
-		return modules.DetectionStatus{RequestId: id, Status: "UNKNOWN",}
+		return modules.DetectionStatus{RequestId: id, Status: models.StatusUNKNOWN,}
 	}
 	request_id, err := uuid.Parse(status.RequestID)
 	if err != nil {

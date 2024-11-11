@@ -568,7 +568,7 @@ func testDetectionStatusesSelect(t *testing.T) {
 }
 
 var (
-	detectionStatusDBTypes = map[string]string{`RequestID`: `uuid`, `Status`: `character varying`, `Data`: `bytea`}
+	detectionStatusDBTypes = map[string]string{`RequestID`: `uuid`, `Status`: `enum.status('UNKNOWN','PENDING','PARSING_FAILED','TRANSPORT_FAILED')`, `Data`: `bytea`}
 	_                      = bytes.MinRead
 )
 

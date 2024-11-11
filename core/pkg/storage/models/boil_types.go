@@ -50,3 +50,20 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 	strmangle.PutBuffer(buf)
 	return str
 }
+
+// Enum values for Status
+const (
+	StatusUNKNOWN          string = "UNKNOWN"
+	StatusPENDING          string = "PENDING"
+	StatusPARSING_FAILED   string = "PARSING_FAILED"
+	StatusTRANSPORT_FAILED string = "TRANSPORT_FAILED"
+)
+
+func AllStatus() []string {
+	return []string{
+		StatusUNKNOWN,
+		StatusPENDING,
+		StatusPARSING_FAILED,
+		StatusTRANSPORT_FAILED,
+	}
+}
