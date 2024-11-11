@@ -1,8 +1,8 @@
 import pytest
 
 from compute.engine import ComputeEngine
+from compute.mock_broker import LocalMessageBroker
 from compute.models.communication import ComputeRequest
-from compute.rabbitmq_broker import RabbitMQBroker
 from detectors.mocks import MockDetector
 
 
@@ -10,12 +10,7 @@ from detectors.mocks import MockDetector
 def setup_engine():
     mock_detector = MockDetector(detector_name="mock_detector", labels=["label1", "label2"])
 
-    mock_broker = RabbitMQBroker(
-        source_queue_name="requests_queue",
-        response_queue_name="responses_queue",
-        rabbitmq_host="localhost",
-        rabbitmq_port=5672
-    )
+    mock_broker = LocalMessageBroker()
 
     engine = ComputeEngine(detectors=[mock_detector], default_detector=mock_detector, broker=mock_broker)
     return engine, mock_detector
