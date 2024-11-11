@@ -18,7 +18,7 @@ type Storage struct {
 }
 
 func NewStorage() *Storage {
-	db, err := sql.Open("postgres", "dbname=mango_truth host=localhost user=zahar password=password sslmode=disable")
+	db, err := sql.Open("postgres", "dbname=mango-db host=postgres user=mango-user password=password sslmode=disable")
 	if err != nil {
 		panic(fmt.Sprintf("Can not connect to the database: %s", err.Error()))
 	}
