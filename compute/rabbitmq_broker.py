@@ -1,8 +1,10 @@
 import json
 import threading
+
 import pika
-from compute.models.communication import ComputeRequest
+
 from compute.interfaces import IMessageBroker
+from compute.models.communication import ComputeRequest
 
 
 class RabbitMQBroker(IMessageBroker):
@@ -13,8 +15,8 @@ class RabbitMQBroker(IMessageBroker):
         self.source_queue_name = source_queue_name  # input queue
         self.response_queue_name = response_queue_name  # output queue
 
-        self.channel.queue_declare(queue=self.source_queue_name, durable=True)
-        self.channel.queue_declare(queue=self.response_queue_name, durable=True)
+        self.channel.queue_declare(queue=self.source_queue_name, durable=False)
+        self.channel.queue_declare(queue=self.response_queue_name, durable=False)
         self.process_request_method = None
         self.consumer_thread = None  # Thread for consuming messages
         self.is_consuming = False  # Flag to manage the consumer lifecycle
@@ -53,7 +55,7 @@ class RabbitMQBroker(IMessageBroker):
         request = ComputeRequest(
             request_id=request_data['request_id'],
             content=request_data['content'],
-            detector_name=request_data['detector_name']
+            detector_name=request_data.get('detector_name', None)
         )
 
         response = self.process_request_method(request)
@@ -74,5 +76,3 @@ class RabbitMQBroker(IMessageBroker):
 
     def close(self):
         self.connection.close()
-
-
