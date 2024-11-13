@@ -22,13 +22,12 @@ class RabbitMQBroker(IMessageBroker):
         self.source_queue_name = source_queue_name  # input queue
         self.response_queue_name = response_queue_name  # output queue
 
-        self.channel.queue_declare(queue=self.source_queue_name, durable=True)
-        self.channel.queue_declare(queue=self.response_queue_name, durable=True)
+        self.channel.queue_declare(queue=self.source_queue_name, durable=False)
+        self.channel.queue_declare(queue=self.response_queue_name, durable=False)
         self.process_request_method = None
         self.consumer_thread = None  # Thread for consuming messages
         self.is_consuming = False  # Flag to manage the consumer lifecycle
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-        self.logger = logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
     def set_process_request_method(self, process_request_method):
         self.process_request_method = process_request_method

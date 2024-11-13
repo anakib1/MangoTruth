@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Any
 
@@ -29,9 +30,10 @@ if __name__ == "__main__":
         load_dotenv(dotenv_path=os.path.join(base_dir, "config", "sample.env"))
         broker_config = config.get("rabbitmq", dict())
         detector_config = config.get("detectors", dict())
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.info('Using config {}'.format(config))
 
         # RabbitMQ Broker Configuration
-        print(get_config_value("RABBITMQ_SOURCE_QUEUE_NAME", broker_config.get("source_queue_name")))
         broker = RabbitMQBroker(
             source_queue_name=get_config_value("RABBITMQ_SOURCE_QUEUE_NAME", broker_config.get("source_queue_name")),
             response_queue_name=get_config_value("RABBITMQ_RESPONSE_QUEUE_NAME",
@@ -52,13 +54,13 @@ if __name__ == "__main__":
 
         # Engine init
         engine = ComputeEngine(detectors=detectors, default_detector=default_detector, broker=broker)
-        print("Starting the Compute Engine...")
+        logging.info("Starting the Compute Engine...")
         engine.start_consuming()
 
         # Keep the program running
         while True:
             pass
     except KeyboardInterrupt:
-        print("Stopping the Compute Engine...")
+        logging.info("Stopping the Compute Engine...")
         engine.stop_consuming()
         engine.close()
