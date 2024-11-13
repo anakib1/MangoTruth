@@ -1,5 +1,5 @@
 [psql]
-dbname  = "mango_truth"
+dbname  = "postgres"
 user    = "postgres"
 pass    = "postgres"
 host    = "localhost"

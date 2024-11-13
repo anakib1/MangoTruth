@@ -74,12 +74,14 @@ func (c *ComputeRouter) Work() {
 				"msg", msg)
 			req, err := json.Marshal(msg)
 			if err != nil {
-				c.sink <- modules.DetectionStatus{Status: models.StatusPARSING_FAILED}
+				slog.Warn("Failed to marshal message.", "Error", err)
+				c.sink <- modules.DetectionStatus{Status: models.StatusFAILURE}
 				continue
 			}
 			kerr := c.rCh.Publish("", c.rSinkQ.Name, false, false, amqp.Publishing{ContentType: "application/json", Body: req})
 			if kerr != nil {
-				c.sink <- modules.DetectionStatus{Status: models.StatusTRANSPORT_FAILED}
+				slog.Warn("Failed to publish message.", "Error", err)
+				c.sink <- modules.DetectionStatus{Status: models.StatusFAILURE}
 			}
 		case msg := <-c.rFeed:
 			slog.Debug("Compute rFeed",
