@@ -1,7 +1,8 @@
-from detectors.interfaces import IDetector
-from compute.models.communication import ComputeRequest, ComputeResponse
-from compute.interfaces import IMessageBroker
 from typing import List
+
+from compute.interfaces import IMessageBroker
+from compute.models.communication import ComputeRequest, ComputeResponse
+from detectors.interfaces import IDetector
 
 
 class ComputeEngine:
@@ -19,13 +20,14 @@ class ComputeEngine:
 
     def process_request(self, request: ComputeRequest) -> ComputeResponse:
         detector = self.get_detector_by_name(request.detector_name)
-        predictions, explanation = detector.predict_proba(request.content)
-        predictions_mapping = {label: score for label, score in zip(detector.get_labels(), predictions)}
+        predictions, status = detector.predict_proba(request.content)
+        predictions_mapping = {"labels": [{"label": label, "probability": score} for label, score in
+                                          zip(detector.get_labels(), predictions)]}
 
         return ComputeResponse(
-            explanation=explanation,
-            predictions=predictions_mapping,
-            request_id=request.request_id
+            status=status,
+            verdict=predictions_mapping,
+            request_id=str(request.request_id)
         )
 
     def get_detector_by_name(self, detector_name: str) -> IDetector:

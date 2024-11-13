@@ -1,5 +1,6 @@
-import numpy as np
 from typing import Optional, List
+
+import numpy as np
 
 from detectors.interfaces import IDetector
 
@@ -13,7 +14,8 @@ class MockDetector(IDetector):
 
     def predict_proba(self, text: str) -> (np.array, str):
         ret = np.random.random(size=(len(self.labels),))
-        return ret / ret.sum(), "Prediction based on provided content"
+        status = "SUCCESS"
+        return ret / ret.sum(), status
 
     def get_labels(self) -> List[str]:
         return self.labels

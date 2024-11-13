@@ -1,7 +1,10 @@
+import json
+from dataclasses import asdict
+
 import pytest
 
 from compute.engine import ComputeEngine
-from compute.mock_broker import LocalMessageBroker
+from compute.mock_broker import MockMessageBroker
 from compute.models.communication import ComputeRequest
 from detectors.mocks import MockDetector
 
@@ -10,7 +13,7 @@ from detectors.mocks import MockDetector
 def setup_engine():
     mock_detector = MockDetector(detector_name="mock_detector", labels=["label1", "label2"])
 
-    mock_broker = LocalMessageBroker()
+    mock_broker = MockMessageBroker()
 
     engine = ComputeEngine(detectors=[mock_detector], default_detector=mock_detector, broker=mock_broker)
     return engine, mock_detector
@@ -31,7 +34,18 @@ def test_bad_detector_request(setup_engine):
 
     # Verify the response structure
     assert response.request_id == "test_request_id"
-    assert response.explanation == "Prediction based on provided content"
+    assert response.status == "SUCCESS"
+
+
+def test_broker_on_request(setup_engine):
+    engine, _ = setup_engine
+    request = ComputeRequest(
+        request_id="test_request_id",
+        content="test_content",
+        detector_name="mock_detector_non_existant"
+    )
+    json_request = json.dumps(asdict(request)).encode('utf-8')
+    engine.broker.on_request(None, None, None, json_request)
 
 
 def test_process_request(setup_engine):
@@ -49,7 +63,7 @@ def test_process_request(setup_engine):
 
     # Verify the response structure
     assert response.request_id == "test_request_id"
-    assert response.explanation == "Prediction based on provided content"
+    assert response.status == "SUCCESS"
 
 
 def test_get_detector_by_name(setup_engine):

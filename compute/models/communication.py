@@ -1,6 +1,6 @@
-from uuid import uuid4
+import json
 from dataclasses import dataclass
-from typing import Mapping
+from uuid import uuid4
 
 
 @dataclass
@@ -9,9 +9,23 @@ class ComputeRequest:
     content: str
     detector_name: str
 
+    @classmethod
+    def from_json(cls, json_data):
+        # Parse if json_data is a string; assume it's already a dict if not
+        if isinstance(json_data, str):
+            data = json.loads(json_data)
+        else:
+            data = json_data
+
+        return cls(
+            request_id=data['request_id'],
+            content=data['content'],
+            detector_name=data['detector_name']
+        )
+
 
 @dataclass
 class ComputeResponse:
-    explanation: str
-    predictions: Mapping[str, float]
     request_id: str
+    status: str
+    verdict: dict[str, list[dict[str, float]]]
