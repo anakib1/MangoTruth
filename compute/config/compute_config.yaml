@@ -1,6 +1,6 @@
 rabbitmq:
-  source_queue_name: "requests_queue"
-  response_queue_name: "responses_queue"
+  source_queue_name: "request_queue"
+  response_queue_name: "response_queue"
   host: "localhost"
   port: 5672
   username: "guest"

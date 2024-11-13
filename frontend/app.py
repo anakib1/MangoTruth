@@ -109,7 +109,7 @@ def fetch_status_wrapper(server_url, request_id):
     try:
         # Prepare the JSON payload with requestId
         data = {
-            "requestId": request_id
+            "request_id": request_id
         }
 
         # Send GET request to the server
