@@ -42,7 +42,7 @@ func (s *Storage) UpdStatus(status modules.DetectionStatus) {
 
 	err = new_status.Insert(context.TODO(), s.db, boil.Infer())
 	if err != nil {
-		panic(fmt.Sprintf("Can not insert value into storage, error: %s", err.Error()))
+		slog.Error("Can not insert value into storage", "error-msg", err.Error())
 	}
 }
 
