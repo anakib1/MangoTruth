@@ -57,10 +57,7 @@ func (s *Storage) GetStatus(id uuid.UUID) modules.DetectionStatus {
 		slog.Error("Error in FindDetectionStatus", "error-msg", err.Error())
 		return modules.DetectionStatus{RequestId: id, Status: models.StatusUNKNOWN,}
 	}
-	request_id, err := uuid.Parse(status.RequestID)
-	if err != nil {
-		panic(fmt.Sprintf("RequestID is in the wrong format, err: %s", err.Error()))
-	}
+	request_id := uuid.MustParse(status.RequestID)
 	var verdict modules.Verdict
 	err = json.Unmarshal(status.Data.Bytes, &verdict)
 	if err != nil {
