@@ -1,24 +1,42 @@
-from detectors.interfaces import IDetector
-from compute.models.communication import ComputeRequest, ComputeResponse
 from typing import List
+
+from compute.interfaces import IMessageBroker
+from compute.models.communication import ComputeRequest, ComputeResponse
+from detectors.interfaces import IDetector
 
 
 class ComputeEngine:
-    # source - kafka that will provide requests
-    # sink - kafka that will accept responses.
-    def __init__(self, source, sink, detectors: List[IDetector]):
-        self.source = source
-        self.sink = sink
+    def __init__(self, detectors: List[IDetector], default_detector: IDetector, broker: IMessageBroker):
         self.detectors = detectors
+        self.default_detector = default_detector
+        self.broker = broker
+        self.broker.set_process_request_method(self.process_request)
 
-    def do_work(self):
-        if not self.source.is_empty():
-            request: ComputeRequest = self.source.take()
-            # Verify request, pass it to corresponding detector
-            detector = self.detectors[0]
-            resp = detector.predict_proba(request.content)
-            self.sink.put(
-                ComputeResponse("Missing", {x: y for x, y in zip(detector.get_labels(), resp)}, request.request_id))
+    def start_consuming(self):
+        self.broker.start_consuming()
 
-    def has_work(self):
-        return not self.source.is_empty()
+    def stop_consuming(self):
+        self.broker.stop_consuming()
+
+    def process_request(self, request: ComputeRequest) -> ComputeResponse:
+        detector = self.get_detector_by_name(request.detector_name)
+        predictions, status = detector.predict_proba(request.content)
+        predictions_mapping = {"labels": [{"label": label, "probability": score} for label, score in
+                                          zip(detector.get_labels(), predictions)]}
+
+        return ComputeResponse(
+            status=status,
+            verdict=predictions_mapping,
+            request_id=str(request.request_id)
+        )
+
+    def get_detector_by_name(self, detector_name: str) -> IDetector:
+        # Search for the detector by name or return default if not found
+        for detector in self.detectors:
+            if detector.get_detector_name() == detector_name:
+                return detector
+
+        return self.default_detector
+
+    def close(self):
+        self.broker.close()

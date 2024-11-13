@@ -9,7 +9,7 @@ type DetectionQuery struct {
 	// RequestID is the unique identifier for the detection request
 	// required: true
 	// example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-	RequestId uuid.UUID `json:"requestId" binding:"required" example:"f47ac10b-58cc-4372-a567-0e02b2c3d479"`
+	RequestId uuid.UUID `json:"request_id" binding:"required" example:"f47ac10b-58cc-4372-a567-0e02b2c3d479"`
 }
 
 // DetectionRequest represents a detection request
@@ -42,7 +42,7 @@ type DetectionStatus struct {
 	// RequestID is the unique identifier for the detection request
 	// required: true
 	// example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-	RequestId uuid.UUID `json:"requestId" binding:"required" example:"f47ac10b-58cc-4372-a567-0e02b2c3d479"`
+	RequestId uuid.UUID `json:"request_id" binding:"required" example:"f47ac10b-58cc-4372-a567-0e02b2c3d479"`
 
 	// Status is the current status of the detection request
 	// Enum: "REJECTED" "FAILED" "IN_PROGRESS" "FINISHED"
