@@ -152,7 +152,7 @@ def process_fetch_response(response):
     """
     Processes the JSON response from the server.
     - Displays the entire JSON in the Detection Status component.
-    - Extracts labels and probabilities for the Detection Results table.
+    - Generates an HTML table for the Detection Results.
     - Shows a message if no labels are available.
     """
     # Display the entire JSON response
@@ -161,16 +161,44 @@ def process_fetch_response(response):
     # Extract labels for the table
     labels = response.get("verdict", {}).get("labels")
     if labels:
-        table_data = [{"Label": label["label"], "Probability": label["probability"]} for label in labels]
-        return detection_status, table_data, gr.update(visible=False)
+        # Generate an HTML table
+        table_html = "<table>"
+        # Add table headers
+        table_html += "<tr><th>Label</th><th>Probability</th></tr>"
+        for label in labels:
+            table_html += f"<tr><td>{label['label']}</td><td>{label['probability']}</td></tr>"
+        table_html += "</table>"
+        return detection_status, table_html, gr.update(visible=False)
     else:
         # No labels available
-        return detection_status, None, gr.update(value="No labels available yet.", visible=True)
+        return detection_status, "", gr.update(value="No labels available yet.", visible=True)
+
 
 
 if __name__ == '__main__':
     # Define the Gradio interface
-    with gr.Blocks() as demo:
+    with gr.Blocks(css="""
+#fetch_table {
+    height: 500px;
+    overflow-y: auto;
+}
+
+#fetch_table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#fetch_table th, #fetch_table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+#fetch_table th {
+    background-color: #f97316;
+    color: black;
+    text-align: left;
+}
+""") as demo:
         gr.Markdown("# Text Detection Application")
 
         with gr.Tab("Submit Detection"):
@@ -249,11 +277,11 @@ if __name__ == '__main__':
                 label="Detection Status"
                 # Removed 'interactive=False' to fix the TypeError
             )
-            fetch_table = gr.DataFrame(
-                headers=["Label", "Probability"],
+            fetch_table = gr.HTML(
                 label="Detection Results",
-                interactive=False
+                elem_id="fetch_table"  # Assign an element ID for styling
             )
+
             fetch_message = gr.Markdown(
                 value="",
                 label="Status Message",
