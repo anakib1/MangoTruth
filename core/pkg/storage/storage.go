@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"mango_truth/pkg/storage/models"
-	"mango_truth/pkg/modules"
 	"mango_truth/pkg"
+	"mango_truth/pkg/modules"
+	"mango_truth/pkg/storage/models"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
@@ -17,7 +17,7 @@ import (
 )
 
 type Storage struct {
-	db boil.ContextExecutor
+	db  boil.ContextExecutor
 	cfg pkg.StorageConfig
 }
 
@@ -36,11 +36,11 @@ func (s *Storage) UpdStatus(status modules.DetectionStatus) {
 	}
 	new_status := models.DetectionStatus{
 		RequestID: status.RequestId.String(),
-		Status: status.Status,
-		Data: null.BytesFrom(data),
+		Status:    status.Status,
+		Data:      null.BytesFrom(data),
 	}
 
-	err = new_status.Insert(context.TODO(), s.db, boil.Infer())
+	err = new_status.Upsert(context.TODO(), s.db, true, []string{"request_id"}, boil.Infer(), boil.Infer())
 	if err != nil {
 		slog.Error("Can not insert value into storage", "error-msg", err.Error())
 	}
@@ -52,10 +52,10 @@ func (s *Storage) GetStatus(id uuid.UUID) modules.DetectionStatus {
 	case nil:
 		// Do nothing
 	case sql.ErrNoRows:
-		return modules.DetectionStatus{RequestId: id, Status: models.StatusUNKNOWN,}
+		return modules.DetectionStatus{RequestId: id, Status: models.StatusUNKNOWN}
 	default:
 		slog.Error("Error in FindDetectionStatus", "error-msg", err.Error())
-		return modules.DetectionStatus{RequestId: id, Status: models.StatusUNKNOWN,}
+		return modules.DetectionStatus{RequestId: id, Status: models.StatusUNKNOWN}
 	}
 	request_id := uuid.MustParse(status.RequestID)
 	var verdict modules.Verdict
@@ -63,5 +63,5 @@ func (s *Storage) GetStatus(id uuid.UUID) modules.DetectionStatus {
 	if err != nil {
 		panic(fmt.Sprintf("Error parsing []bytes to Verdict, error: %s", err.Error()))
 	}
-	return modules.DetectionStatus{RequestId: request_id, Status: status.Status, Verdict: verdict,}
+	return modules.DetectionStatus{RequestId: request_id, Status: status.Status, Verdict: verdict}
 }
