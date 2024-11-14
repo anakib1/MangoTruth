@@ -41,7 +41,10 @@ To set up installation on your environment follow these steps:
     - Run `go build ./core/cmd/server`
     - Run `go run core/cmd/server/main.go`
 - Compute:
-    - TBD
+    - [Optional](https://docs.python.org/3/library/venv.html) create venv
+    - pip install -r "compute/requirements.txt"
+    - pip install -r "detectors/requirements.txt"
+    - python "compute/main.py"
 - Frontend:
     - [Install Python](https://www.python.org/downloads/release/python-3100/)
     - [Optional](https://docs.python.org/3/library/venv.html) create venv
@@ -90,6 +93,15 @@ Execute the following command from the project directory
         - `run-rabbitmq`
         - `run-core`
     - Access core using http://127.0.0.1:8080/ or http://localhost:8080/
+- Compute
+  . Build docker image (Your PWD has to be in the **project root** directory)
+    ```bash
+     docker build --tag mango-truth-compute:1.0.0 --file ./compute/Dockerfile .
+    ```
+    2. Run docker container
+    ```bash
+     docker run -d --name compute -e RABBITMQ_HOST=host.docker.internal mango-truth-compute:1.0.0
+    ```  
 
 ## Configuration
 
@@ -125,7 +137,12 @@ Config is resolved by path `./core/config/config-development.yml`. TODO: Add opt
 
 ## Compute
 
-TBD
+| Variable            | Usage                                | Default   |
+|---------------------|--------------------------------------|-----------|
+| `rabbitmq.port`     | port of server on which core listens | 8080      |
+| `rabbitmq.host`     | host of RabbitMQ                     | 127.0.0.1 |
+| `rabbitmq.username` | credentials for RabbitMQ             | guest     |
+| `rabbitmq.password` | credentials for RabbitMQ             | guest     |
 
 ## Documentation
 
