@@ -36,6 +36,8 @@ To set up installation on your environment follow these steps:
     - [Install go](https://go.dev/doc/install)
     - [Install rabbitMQ](https://www.rabbitmq.com/docs/download)
     - Configure server using `core/config/config-development.yml` file. Extensive configuration reference coming soon
+    - [Install sqlboiler](https://github.com/volatiletech/sqlboiler)
+    - Run `sqlboiler --wipe --output .\core\pkg\storage\models psql`
     - Run `go build ./core/cmd/server`
     - Run `go run core/cmd/server/main.go`
 - Compute:
@@ -55,7 +57,8 @@ To set up installation on your environment follow these steps:
 
 Execute the following command from the project directory
 
-```bash
+```
+ docker volume create storage
  docker-compose up --build -d
 ```
 
@@ -89,6 +92,7 @@ Execute the following command from the project directory
         - `network`
         - `run-rabbitmq`
         - `run-core`
+        - `run-postgres`
     - Access core using http://127.0.0.1:8080/ or http://localhost:8080/
 - Compute
   . Build docker image (Your PWD has to be in the **project root** directory)
@@ -117,12 +121,16 @@ server:
 
 Config is resolved by path `./core/config/config-development.yml`. TODO: Add option to override location.
 
-| Variable           | Usage                                | Default   |
-|--------------------|--------------------------------------|-----------|
-| `server.port`      | port of server on which core listens | 8080      |
-| `compute.host`     | host of RabbitMQ                     | 127.0.0.1 |
-| `compute.username` | credentials for RabbitMQ             | guest     |
-| `compute.password` | credentials for RabbitMQ             | guest     |
+| Variable               | Usage                                | Default    |
+|------------------------|--------------------------------------|------------|
+| `server.port`          | port of server on which core listens | 8080       |
+| `compute.host`         | host of RabbitMQ                     | 127.0.0.1  |
+| `compute.username`     | credentials for RabbitMQ             | guest      |
+| `compute.password`     | credentials for RabbitMQ             | guest      |
+| `storage.databaseName` | credentials for PostgreSQL           | mango-db   |
+| `storage.userName`     | credentials for PostgreSQL           | mango-user |
+| `storage.password`     | credentials for PostgreSQL           | password   |
+| `storage.hostName`     | credentials for PostgreSQL           | postgres   |
 
 ## Frontend
 

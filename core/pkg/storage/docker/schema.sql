@@ -1,0 +1,7 @@
+CREATE TYPE STATUS AS ENUM('UNKNOWN', 'PENDING', 'SUCCESS', 'FAILURE');
+
+CREATE TABLE detection_status (
+    request_id UUID PRIMARY KEY,
+    status STATUS NOT NULL,
+    data BYTEA
+);

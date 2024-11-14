@@ -15,3 +15,9 @@ compute:
   idlePeriodSeconds: 5
   requestQueueName: "request_queue"
   responseQueueName: "response_queue"
+storage:
+  databaseName: "mango-db"
+  userName: "mango-user"
+  password: "password"
+  driverName: "postgres"
+  hostName: "postgres"
