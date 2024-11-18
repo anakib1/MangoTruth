@@ -76,3 +76,23 @@ class TrainingNexus:
         :return:
         """
         pass
+
+
+class WhiteBoxModel:
+    def get_log_probas(self, text: str) -> np.array:
+        """
+        Returns log token probabilities for the given text.
+        :param text: input text
+        :return: np.array representing log probabilities.
+        """
+        pass
+
+
+class BlackBoxModel:
+    def complete_text(self, text_start: str) -> str:
+        """
+        Generates the remaining text_end for the given beginning of the some text.
+        :param text_start: the beginning of some text
+        :return: text_start + text_end
+        """
+        pass
