@@ -7,8 +7,8 @@ from uuid import uuid4
 import neptune
 from neptune.types import File
 
+from detectors.interfaces import Nexus, TrainingNexus
 from detectors.metrics import Conclusion, SplitConclusion
-from detectors.nexus import Nexus, TrainingNexus
 
 
 class NeptuneNexus(Nexus, TrainingNexus):
