@@ -39,8 +39,6 @@ class IDetector:
         pass
 
 
-
-
 class Nexus:
     def load_run_weights(self, run_id: uuid4) -> bytes:
         """
@@ -77,7 +75,7 @@ class TrainingNexus:
 
 
 class CompletionLanguageModel:
-    def complete_text(self, prefix: str, predict_log_proba:bool) -> Union[Tuple[List[str]], Tuple[List[str], np.array]]:
+    def complete_text(self, prefix: str, predict_log_proba: bool) -> Union[List[str], Tuple[List[str], np.array]]:
         """
         Generates the remaining suffix for the given beginning of the some text.
         :param prefix: the beginning of some text
@@ -85,6 +83,7 @@ class CompletionLanguageModel:
         :return: prefix + suffix split into tokens, probabilities of corresponding tokens.
         """
         pass
+
 
 class EstimationLanguageModel:
     def get_text_log_proba(self, text: str) -> Tuple[List[str], np.array]:
@@ -94,4 +93,3 @@ class EstimationLanguageModel:
         :return: Tuple of text split in model's tokens and np.array representing probabilities of corresponding tokens.
         """
         pass
-
