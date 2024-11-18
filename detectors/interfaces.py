@@ -1,5 +1,7 @@
-from typing import List
+from typing import Optional, Dict, Union, List, Tuple
+from uuid import uuid4
 
+from detectors.metrics import Conclusion
 import numpy as np
 
 
@@ -37,10 +39,6 @@ class IDetector:
         pass
 
 
-from typing import Optional, Dict, Union, List
-from uuid import uuid4
-
-from detectors.metrics import Conclusion
 
 
 class Nexus:
@@ -78,21 +76,22 @@ class TrainingNexus:
         pass
 
 
-class WhiteBoxModel:
-    def get_log_probas(self, text: str) -> np.array:
+class CompletionLanguageModel:
+    def complete_text(self, prefix: str, predict_log_proba:bool) -> Union[Tuple[List[str]], Tuple[List[str], np.array]]:
+        """
+        Generates the remaining suffix for the given beginning of the some text.
+        :param prefix: the beginning of some text
+        :param predict_log_proba: if model should return log probabilities of underlying text
+        :return: prefix + suffix split into tokens, probabilities of corresponding tokens.
+        """
+        pass
+
+class EstimationLanguageModel:
+    def get_text_log_proba(self, text: str) -> Tuple[List[str], np.array]:
         """
         Returns log token probabilities for the given text.
         :param text: input text
-        :return: np.array representing log probabilities.
+        :return: Tuple of text split in model's tokens and np.array representing probabilities of corresponding tokens.
         """
         pass
 
-
-class BlackBoxModel:
-    def complete_text(self, text_start: str) -> str:
-        """
-        Generates the remaining text_end for the given beginning of the some text.
-        :param text_start: the beginning of some text
-        :return: text_start + text_end
-        """
-        pass
