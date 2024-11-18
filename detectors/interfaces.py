@@ -77,7 +77,7 @@ class TrainingNexus:
 
 
 class CompletionLanguageModel:
-    def complete_text(self, prefix: str, predict_log_proba: bool) -> Union[List[str], Tuple[List[str], np.array]]:
+    def complete_text(self, prefix: str, predict_log_proba: bool) -> Union[str, Tuple[List[str], np.array]]:
         """
         Generates the remaining suffix for the given beginning of some text.
         :param prefix: the beginning of some text
@@ -85,6 +85,11 @@ class CompletionLanguageModel:
         :return: prefix + suffix split into tokens, probabilities of corresponding tokens.
         """
         pass
+
+    def complete_texts(self, prefixes: List[str], K: int, predict_log_proba: bool) -> List[Union[str, Tuple[List[str], np.array]]]:
+        """
+        The same as complete_text function, but generates the remaining suffix for K texts.
+        """
 
 class EstimationLanguageModel:
     def get_text_log_proba(self, text: str) -> Tuple[List[str], np.array]:
