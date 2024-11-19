@@ -10,6 +10,12 @@
 - Academic domain
 - Explainable models
 
+## Contribution
+
+### New model
+
+When adding new model, check out our [training guidelines](docs/training.md)!
+
 ## Ecosystem
 
 Repository consists of:
@@ -24,9 +30,10 @@ Repository consists of:
 
 ### Supported models:
 
-| Name | Paper                                    | Benchmark score (*) |
-|------|------------------------------------------|---------------------| 
-| GLTR | [link](https://arxiv.org/pdf/1906.04043) | TBD                 |
+| Name        | Paper                                    | val F1 | val AUC | Neptune URL                                                                                                                                                                                             |
+|-------------|------------------------------------------|--------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| GLTR        | [link](https://arxiv.org/pdf/1906.04043) | TBD    | TBD     | TBD                                                                                                                                                                                                     |
+| Ghostbuster | [link](https://arxiv.org/pdf/2305.15047) | 0.981  | 0.971   | [link](https://app.neptune.ai/o/mango/org/mango-truth/runs/details?viewId=standard-view&detailsTab=dashboard&dashboardId=Classification-report-9d8592d6-b5d9-47fa-ae63-75ee2b9e3439&shortId=MNGTRTH-23) | 
 
 ## Installation from source
 

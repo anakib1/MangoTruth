@@ -1,37 +1,46 @@
 from collections import defaultdict
 
 import numpy as np
+from typing import List
 from nltk import FreqDist, bigrams, trigrams
 from transformers import AutoTokenizer
+from detectors.interfaces import EstimationLanguageModel
 
 
-class LanguageModel:
+class TrainableLanguageModel(EstimationLanguageModel):
     def __init__(self, tokenizer_handle="google/gemma-2-27b-it", discount=0.9):
         self.discount = discount
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_handle)
 
-    def train(self, corpus_text):
-        raise NotImplementedError("This method should be implemented by subclasses.")
-
-    def predict_proba(self, text):
+    def train(self, corpus_text: List[str]):
         raise NotImplementedError("This method should be implemented by subclasses.")
 
 
-class UnigramModel(LanguageModel):
-    def train(self, corpus_text):
-        tokens = self.tokenizer.tokenize(corpus_text)
+MIN_PROBABILITY = 1e-9
+
+
+class UnigramModel(TrainableLanguageModel):
+    def train(self, corpus_text: List[str]):
+        tokens_seq = self.tokenizer(corpus_text)['input_ids']
+        tokens = []
+        for token in tokens_seq:
+            tokens.extend(token)
         self.total_tokens = len(tokens)
         self.unigram_freq = FreqDist(tokens)
         self.unigram_probabilities = {token: count / self.total_tokens for token, count in self.unigram_freq.items()}
 
-    def predict_proba(self, text):
-        tokens = self.tokenizer.tokenize(text)
-        return np.array([self.unigram_probabilities.get(token, 0.0) for token in tokens])
+    def get_text_log_proba(self, text):
+        tokens = self.tokenizer(text, add_special_tokens=False)['input_ids']
+        return tokens, np.array(
+            [np.log(self.unigram_probabilities.get(token, MIN_PROBABILITY)) for token in tokens])
 
 
-class TrigramModel(LanguageModel):
-    def train(self, corpus_text):
-        tokens = self.tokenizer.tokenize(corpus_text)
+class TrigramModel(TrainableLanguageModel):
+    def train(self, corpus_text: List[str]):
+        tokens_seq = self.tokenizer(corpus_text)['input_ids']
+        tokens = []
+        for token in tokens_seq:
+            tokens.extend(token)
 
         self.unigram_freq = FreqDist(tokens)
         self.bigram_freq = FreqDist(bigrams(tokens))
@@ -46,8 +55,8 @@ class TrigramModel(LanguageModel):
 
         self.total_trigrams = sum(self.trigram_freq.values())
 
-    def predict_proba(self, text):
-        tokens = self.tokenizer.tokenize(text)
+    def get_text_log_proba(self, text):
+        tokens = self.tokenizer(text, add_special_tokens=False)['input_ids']
         trigram_probabilities = []
 
         for w1, w2, w3 in trigrams(tokens + [self.tokenizer.pad_token, self.tokenizer.pad_token]):
@@ -61,16 +70,6 @@ class TrigramModel(LanguageModel):
             trigram_prob = trigram_discounted + bigram_continuation * bigram_prob
             trigram_probabilities.append(trigram_prob)
 
-        return np.array(trigram_probabilities if trigram_probabilities else [0.0])
-
-
-if __name__ == '__main__':
-    corpus_text = "Your training corpus text here."
-
-    unigram_model = UnigramModel()
-    unigram_model.train(corpus_text)
-    print("Unigram Probabilities:", unigram_model.predict_proba("Some text to evaluate"))
-
-    trigram_model = TrigramModel()
-    trigram_model.train(corpus_text)
-    print("Trigram Probabilities:", trigram_model.predict_proba("Some text to evaluate"))
+        trigram_probabilities = np.array(trigram_probabilities)
+        return tokens, np.log(trigram_probabilities, out=np.ones(len(tokens)) * np.log(MIN_PROBABILITY),
+                              where=(trigram_probabilities != 0.0))
