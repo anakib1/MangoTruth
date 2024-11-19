@@ -84,7 +84,7 @@ def train_scaling_factor(X, y, c):
 
 def catch_and_return(callable, default):
     try:
-        callable()
+        return callable()
     except:
         print(traceback.format_exc())
         return default
