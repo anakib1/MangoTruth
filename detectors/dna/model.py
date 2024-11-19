@@ -27,7 +27,7 @@ class BlackBoxDNADetector(IDetector):
 
     def predict_proba(self, text: str) -> np.array:
         metric = self.calculate_bscore(text)
-        if self.config.threshold > metric:
+        if metric > self.config.threshold:
             return np.array([0.0, 1.0])
         else:
             return np.array([1.0, 0.0])

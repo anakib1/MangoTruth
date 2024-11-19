@@ -1,5 +1,4 @@
 from typing import List
-import asyncio
 from .config import CompletionModelConfig
 from interfaces import CompletionLanguageModel
 from langchain_openai import ChatOpenAI
@@ -21,7 +20,7 @@ class LangchainCompletionModel(CompletionLanguageModel):
         prompts = [
             [
                 {"role": "system", "content": self.config.system_prompt},
-                {"role": "user", "content": f"{self.config.user_prompt} {prefix}"},
+                {"role": "user", "content": f"{user_prompt}\n{prefix}"},
             ]
             for prefix in prefixes
         ]
