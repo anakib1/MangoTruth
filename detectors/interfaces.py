@@ -39,8 +39,6 @@ class IDetector:
         pass
 
 
-
-
 class Nexus:
     def load_run_weights(self, run_id: uuid4) -> bytes:
         """
@@ -100,4 +98,3 @@ class EstimationLanguageModel:
         :return: Tuple of text split in model's tokens and np.array representing probabilities of corresponding tokens.
         """
         pass
-

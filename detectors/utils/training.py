@@ -28,8 +28,8 @@ def calculate_classification(y_true, y_scores) -> SplitConclusion:
     mtrix.plot()
 
     return SplitConclusion(metrics=ClassificationMetrics(
-        tpr_at_1_percent_fpr=tpr_at_fpr_threshold(y_true, y_scores, target_fpr=0.01),
-        tpr_at_10_percent_fpr=tpr_at_fpr_threshold(y_true, y_scores, target_fpr=0.1),
+        tpr_at_1_percent_fpr=tpr_at_fpr_threshold(fpr, tpr, target_fpr=0.01),
+        tpr_at_10_percent_fpr=tpr_at_fpr_threshold(fpr, tpr, target_fpr=0.1),
         auc=auc,
         precision=precision_score(y_true, y_pred),
         recall=recall_score(y_true, y_pred),

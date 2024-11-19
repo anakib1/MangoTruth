@@ -2,27 +2,20 @@ import pickle
 from typing import List
 
 import numpy as np
-from sklearn.linear_model import LogisticRegressionCV
+from sklearn.pipeline import Pipeline
 
 from detectors.ghostbuster.features import extract_features
-from detectors.ghostbuster.ngrams import UnigramModel, TrigramModel
-from detectors.interfaces import IDetector
+from detectors.interfaces import IDetector, EstimationLanguageModel
 from detectors.utils.loading import ensure_type, ensure_obj
 
 
 class GhostbusterDetector(IDetector):
-
-    def __init__(self):
-        self.clf: LogisticRegressionCV = None
-        self.trigram: TrigramModel = None
-        self.unigram: UnigramModel = None
+    def __init__(self, clf: Pipeline = None, estimators: List[EstimationLanguageModel] = None):
+        self.clf: Pipeline = clf
+        self.estimators: List[EstimationLanguageModel] = estimators
 
     def predict_proba(self, text: str) -> np.array:
-        uni = self.unigram.predict_proba(text)
-        tri = self.trigram.predict_proba(text)
-
-        feats = extract_features([uni, tri])
-
+        feats = extract_features([x.get_text_log_proba(text) for x in self.estimators])
         return self.clf.predict_proba(feats.reshape(1, -1)).flatten()
 
     def get_labels(self) -> List[str]:
@@ -34,15 +27,15 @@ class GhostbusterDetector(IDetector):
             ensure_type(dct, dict)
 
             self.clf = ensure_obj(dct, 'clf')
-            self.unigram = ensure_obj(dct, 'unigram')
-            self.trigram = ensure_obj(dct, 'trigram')
+            self.estimators = ensure_obj(dct, 'estimator')
 
-            ensure_type(self.clf, LogisticRegressionCV)
-            ensure_type(self.unigram, UnigramModel)
-            ensure_type(self.trigram, TrigramModel)
+            ensure_type(self.clf, Pipeline)
+            ensure_type(self.estimators, List)
+            for estimator in self.estimators:
+                ensure_type(estimator, EstimationLanguageModel)
 
         except Exception as e:
             raise Exception("Error occurred while loading weights.", e)
 
     def store_weights(self) -> bytes:
-        return pickle.dumps({"clf": self.clf, "unigram": self.unigram, "trigram": self.trigram})
+        return pickle.dumps({"clf": self.clf, "estimator": self.estimators})
