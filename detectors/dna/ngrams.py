@@ -23,10 +23,10 @@ class NGramsProcessor:
         A list of string tokens extracted from input text.
         """
         text = text.lower()
-        text = re.sub(r"[^a-z0-9]+", " ", text)
+        text = re.sub(r"\W+", " ", text)
         tokens = re.split(r"\s+", text)
         tokens = [self.config.stemmer.stem(x) if len(x) > 3 else x for x in tokens if x not in self.config.stopwords]
-        tokens = [x for x in tokens if re.match(r"^[a-z0-9]+$", x)]
+        tokens = [x for x in tokens if re.match(r"^\w+$", x)]
         return tokens
 
     @staticmethod
@@ -66,7 +66,7 @@ class NGramsProcessor:
             ngrams_Y = [self.create_ngrams(self.tokenize(Y[k]), N_i) for N_i in range(self.config.N_min, self.config.N_max + 1)]
             s = 0
             for N_i in range(self.config.N_min, self.config.N_max + 1):
-                s += self.config.func(N_i) * self.get_ngrams_number(self.calculate_intersection(ngrams_X[N_i], ngrams_Y[N_i])) \
-                     / length_k / self.get_ngrams_number(ngrams_X[N_i])
+                s += self.config.func(N_i) * self.get_ngrams_number(self.calculate_intersection(ngrams_X[N_i - self.config.N_min], ngrams_Y[N_i - self.config.N_min])) \
+                     / length_k / max(self.get_ngrams_number(ngrams_X[N_i - self.config.N_min]), 1)
             elems.append(s)
         return sum(elems) / K

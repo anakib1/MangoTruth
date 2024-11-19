@@ -17,12 +17,16 @@ class BlackBoxDNADetector(IDetector):
     def get_labels(self) -> List[str]:
         return ["Human", "AI"]
 
-    def predict_proba(self, text: str) -> np.array:
+    def calculate_bscore(self, text: str):
         words = text.split()
         divider_num = int(len(words) * (1 - self.config.truncation))
         beginning, X_ending = " ".join(words[:divider_num]), " ".join(words[divider_num:])
-        Y_endings = self.model.complete_texts([beginning] * self.config.K, False)
+        Y_endings = self.model.complete_texts([beginning] * self.config.K, False, n_words=[len(words)] * self.config.K)
         metric = self.ngrams_processor.calculate_metric(X_ending, Y_endings)
+        return metric
+
+    def predict_proba(self, text: str) -> np.array:
+        metric = self.calculate_bscore(text)
         if self.config.threshold > metric:
             return np.array([0.0, 1.0])
         else:
