@@ -18,8 +18,9 @@ class TrainableLanguageModel(EstimationLanguageModel):
 
 MIN_PROBABILITY = 1e-9
 
+
 class UnigramModel(TrainableLanguageModel):
-    def train(self, corpus_text: str):
+    def train(self, corpus_text: List[str]):
         tokens_seq = self.tokenizer(corpus_text)['input_ids']
         tokens = []
         for token in tokens_seq:
@@ -35,7 +36,7 @@ class UnigramModel(TrainableLanguageModel):
 
 
 class TrigramModel(TrainableLanguageModel):
-    def train(self, corpus_text: str):
+    def train(self, corpus_text: List[str]):
         tokens_seq = self.tokenizer(corpus_text)['input_ids']
         tokens = []
         for token in tokens_seq:
