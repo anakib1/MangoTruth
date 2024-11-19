@@ -86,7 +86,7 @@ class CompletionLanguageModel:
         """
         pass
 
-    def complete_texts(self, prefixes: List[str], K: int, predict_log_proba: bool) -> List[Union[str, Tuple[List[str], np.array]]]:
+    def complete_texts(self, prefixes: List[str], predict_log_proba: bool) -> List[Union[str, Tuple[List[str], np.array]]]:
         """
         The same as complete_text function, but generates the remaining suffix for K texts.
         """
