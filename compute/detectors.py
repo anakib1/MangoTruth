@@ -51,6 +51,7 @@ class DetectorsEngine:
                 detector: IDetector = get_class_constructor(signature.classpath)()
                 detector.load_weights(nexus.load_run_weights(signature.run_id))
                 self.detectors[signature.name] = detector
+                logging.info(f"Successfully loaded detector {signature.name}.")
             except:
                 logging.warning(f"Could not instantiate detector {signature.name}. Ex = " + traceback.format_exc())
 
