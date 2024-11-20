@@ -37,7 +37,7 @@ services:
       rabbitmq:
         condition: service_healthy
       postgres:
-        condition: service_started
+        condition: service_healthy
 #    healthcheck:
 #      test: ["CMD", "curl", "-f", "http://localhost:8080/api/"]
 #      interval: 30s
@@ -88,6 +88,8 @@ services:
       - mango-net
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
 
 
