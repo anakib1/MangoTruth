@@ -26,6 +26,7 @@ func NewMangoRest(engineSink chan<- modules.ClientToServer, storageRef *storage.
 		v1.GET("/detection", r.GetDetection)
 		v1.PUT("/detection", r.PutDetection)
 		v1.GET("/detectors", r.GetDetectors)
+		v1.GET("/detection/mass", r.MassGetDetection)
 	}
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

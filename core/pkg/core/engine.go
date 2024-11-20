@@ -57,6 +57,10 @@ func (e *MangoEngine) Work() {
 				case modules.DetectionQuery:
 					status := e.storage.GetStatus(req.RequestId)
 					cts.Ret <- status
+
+				case modules.MassDetectionStatusRequest:
+					status := e.storage.MassStatus()
+					cts.Ret <- status
 				default:
 					slog.Warn(fmt.Sprintf("Received message of unexepcted type. Type = %T", req))
 				}
