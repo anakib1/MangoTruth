@@ -59,15 +59,18 @@ class DetectGpt(IDetector):
             return np.array([self.predict_openai(perturbation) for perturbation in
                              tqdm(texts, desc="Calculating perplexities")])
 
-    def predict_proba(self, text: str) -> np.array:
+    def score(self, text: str) -> float:
         perturbations = self.perturbator.perturbate([text] * self.num_perturbations)
 
         probas = self.predict_perplexities(perturbations)
         nu = np.mean(probas)
         d = self.predict_perplexities([text])[0] - nu
         var = np.sum((probas - nu) ** 2) / (self.num_perturbations - 1)
+        return d if var == 0.0 else d / var
 
-        if d / var > 0.005:
+    def predict_proba(self, text: str) -> np.array:
+        score = self.score(text)
+        if score > 0.005:
             return [0.0, 1.0]
         else:
             return [1.0, 0.0]
