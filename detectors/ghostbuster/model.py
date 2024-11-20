@@ -15,7 +15,7 @@ class GhostbusterDetector(IDetector):
         self.estimators: List[EstimationLanguageModel] = estimators
 
     def predict_proba(self, text: str) -> np.array:
-        feats = extract_features([x.get_text_log_proba(text) for x in self.estimators])
+        feats = extract_features([x.get_text_log_proba(text)[1] for x in self.estimators])
         return self.clf.predict_proba(feats.reshape(1, -1)).flatten()
 
     def get_labels(self) -> List[str]:
