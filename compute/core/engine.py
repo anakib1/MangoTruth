@@ -23,12 +23,12 @@ class ComputeEngine:
                 verdict=None,
                 request_id=str(request.request_id)
             )
-        predictions, status = detector.predict_proba(request.content)
+        predictions = detector.predict_proba(request.content)
         predictions_mapping = {"labels": [{"label": label, "probability": score} for label, score in
                                           zip(detector.get_labels(), predictions)]}
 
         return ComputeResponse(
-            status=status,
+            status="SUCCESS",
             verdict=predictions_mapping,
             request_id=str(request.request_id)
         )
