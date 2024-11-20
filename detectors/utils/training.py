@@ -20,7 +20,7 @@ def calculate_classification(y_true, y_scores) -> SplitConclusion:
     y_pred = y_scores > 0.5
 
     fpr, tpr, thresholds = roc_curve(y_true, y_scores)
-    auc = roc_auc_score(y_true, y_pred)
+    auc = roc_auc_score(y_true, y_scores)
     display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=auc)
     display.plot()
 

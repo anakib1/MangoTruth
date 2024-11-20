@@ -1,29 +1,26 @@
-from detectors.ghostbuster.ngrams import UnigramModel, TrigramModel
-
-from detectors.ghostbuster.openai import OpenaiProbabilityEstimator
+import argparse
+import os
+import pickle
 import random
 from typing import Any
-
-from detectors.ghostbuster.features import extract_features
-from tqdm.auto import tqdm
-import os
-import argparse
-from datasets import load_dataset
-from dotenv import load_dotenv
-import pickle
-
-from detectors.neptune.nexus import NeptuneNexus
-from detectors.utils.training import calculate_classification
 from uuid import uuid4
 
+from datasets import load_dataset
+from dotenv import load_dotenv
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.calibration import CalibratedClassifierCV
-from sklearn.model_selection import train_test_split
+from tqdm.auto import tqdm
 
+from detectors.ghostbuster.features import extract_features
 from detectors.ghostbuster.model import GhostbusterDetector
+from detectors.ghostbuster.ngrams import UnigramModel, TrigramModel
+from detectors.ghostbuster.openai import OpenaiProbabilityEstimator
 from detectors.metrics import Conclusion
+from detectors.neptune.nexus import NeptuneNexus
+from detectors.utils.training import calculate_classification
 
 
 def get_obj_from_persistance(filename: str) -> Any:
