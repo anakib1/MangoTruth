@@ -6,7 +6,7 @@ from dataclasses import asdict
 
 import pika
 
-from compute.interfaces import IMessageBroker
+from compute.core.interfaces import IMessageBroker
 from compute.models.communication import ComputeRequest
 
 

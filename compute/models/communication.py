@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from uuid import uuid4
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -28,4 +29,4 @@ class ComputeRequest:
 class ComputeResponse:
     request_id: str
     status: str
-    verdict: dict[str, list[dict[str, float]]]
+    verdict: Optional[Dict[str, List[Dict[str, float]]]]

@@ -5,9 +5,10 @@ from typing import Any
 import yaml
 from dotenv import load_dotenv
 
-from compute.engine import ComputeEngine
-from compute.rabbitmq_broker import RabbitMQBroker
-from detectors.mocks import MockDetector
+from compute.core.detectors import DetectorsEngine, PostgresDetectorsProvider
+from compute.core.engine import ComputeEngine
+from compute.core.rabbitmq_broker import RabbitMQBroker
+from detectors.neptune.nexus import NeptuneNexus
 
 
 def load_config(file_path: str) -> dict:
@@ -30,6 +31,12 @@ if __name__ == "__main__":
         load_dotenv(dotenv_path=os.path.join(base_dir, "config", "sample.env"))
         broker_config = config.get("rabbitmq", dict())
         detector_config = config.get("detectors", dict())
+
+        detector_config["postgres_db"] = os.getenv("POSTGRES_DB", detector_config.get("postgres_db"))
+        detector_config["postgres_user"] = os.getenv("POSTGRES_USER", detector_config.get("postgres_user"))
+        detector_config["postgres_password"] = os.getenv("POSTGRES_PASSWORD", detector_config.get("postgres_password"))
+        detector_config["postgres_host"] = os.getenv("POSTGRES_HOST", detector_config.get("postgres_host"))
+
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         logging.info('Using config {}'.format(config))
 
@@ -44,16 +51,16 @@ if __name__ == "__main__":
             rabbitmq_password=get_config_value("RABBITMQ_PASSWORD", broker_config.get("password"))
         )
 
-        # Mock Initialization of Detectors
-        detectors = []
-        for idx, detector in enumerate(config["detectors"], start=1):
-            name = get_config_value(f"DETECTOR_{idx}_NAME", detector["name"])
-            labels = get_config_value(f"DETECTOR_{idx}_LABELS", ",".join(detector["labels"])).split(",")
-            detectors.append(MockDetector(detector_name=name, labels=labels))
-        default_detector = detectors[0]
+        detection_provider = PostgresDetectorsProvider(
+            detector_config['postgres_host'],
+            detector_config['postgres_db'],
+            detector_config['postgres_user'],
+            detector_config['postgres_password'])
 
-        # Engine init
-        engine = ComputeEngine(detectors=detectors, default_detector=default_detector, broker=broker)
+        nexus = NeptuneNexus()
+        detector_engine = DetectorsEngine(detection_provider, nexus)
+
+        engine = ComputeEngine(detectors_engine=detector_engine, broker=broker)
         logging.info("Starting the Compute Engine...")
         engine.start_consuming()
 

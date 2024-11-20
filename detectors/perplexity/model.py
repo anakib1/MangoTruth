@@ -1,14 +1,13 @@
-from typing import List
 import pickle
+from typing import List
 
-from detectors.utils.loading import ensure_type, ensure_obj
-
-from detectors.interfaces import IDetector
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import numpy as np
 import torch
 from openai import OpenAI
-import numpy as np
-import traceback
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+from detectors.interfaces import IDetector
+from detectors.utils.loading import ensure_type, ensure_obj
 from detectors.utils.math import safe_sigmoid
 
 
