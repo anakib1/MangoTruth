@@ -5,9 +5,9 @@ from typing import Any
 import yaml
 from dotenv import load_dotenv
 
-from compute.detectors import DetectorsEngine, PostgresDetectorsProvider
-from compute.engine import ComputeEngine
-from compute.rabbitmq_broker import RabbitMQBroker
+from compute.core.detectors import DetectorsEngine, PostgresDetectorsProvider
+from compute.core.engine import ComputeEngine
+from compute.core.rabbitmq_broker import RabbitMQBroker
 from detectors.neptune.nexus import NeptuneNexus
 
 
@@ -31,6 +31,11 @@ if __name__ == "__main__":
         load_dotenv(dotenv_path=os.path.join(base_dir, "config", "sample.env"))
         broker_config = config.get("rabbitmq", dict())
         detector_config = config.get("detectors", dict())
+
+        detector_config.setdefault("postgres_db", os.getenv("POSTGRES_DB"))
+        detector_config.setdefault("postgres_user", os.getenv("POSTGRES_USER"))
+        detector_config.setdefault("postgres_password", os.getenv("POSTGRES_PASSWORD"))
+
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         logging.info('Using config {}'.format(config))
 
@@ -45,7 +50,7 @@ if __name__ == "__main__":
             rabbitmq_password=get_config_value("RABBITMQ_PASSWORD", broker_config.get("password"))
         )
 
-        detection_provider = PostgresDetectorsProvider('mango-truth', 'postgres', 'postgres')
+        detection_provider = PostgresDetectorsProvider(detector_config['postgres_db'], detector_config['postgres_user'], detector_config['postgres_password'])
         nexus = NeptuneNexus()
         detector_engine = DetectorsEngine(detection_provider, nexus)
 

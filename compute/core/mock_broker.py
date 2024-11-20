@@ -4,7 +4,7 @@ import queue
 import threading
 from dataclasses import asdict
 
-from compute.interfaces import IMessageBroker
+from compute.core.interfaces import IMessageBroker
 from compute.models.communication import ComputeRequest
 
 

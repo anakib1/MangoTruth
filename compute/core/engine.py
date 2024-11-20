@@ -1,9 +1,6 @@
-from typing import List
-
-from compute.interfaces import IMessageBroker
+from compute.core.interfaces import IMessageBroker
 from compute.models.communication import ComputeRequest, ComputeResponse
-from detectors.interfaces import IDetector
-from compute.detectors import DetectorsEngine
+from compute.core.detectors import DetectorsEngine
 
 
 class ComputeEngine:
@@ -19,7 +16,7 @@ class ComputeEngine:
         self.broker.stop_consuming()
 
     def process_request(self, request: ComputeRequest) -> ComputeResponse:
-        detector = self.detectors_engine.get_detector(request.detector_name)
+        detector = self.detectors_engine.get_detector_by_name(request.detector_name)
         if detector is None:
             return ComputeResponse(
                 status="FAILED",

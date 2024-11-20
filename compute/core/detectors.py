@@ -1,7 +1,7 @@
 import logging
 import traceback
 import importlib
-from compute.models.detectors import Detector
+from compute.models.detectors import DetectorSignature
 from detectors.interfaces import IDetector
 from detectors.interfaces import Nexus
 from typing import List, Optional
@@ -16,30 +16,49 @@ def get_class_constructor(classpath: str):
 
 
 class IDetectorsProvider:
-    def get_detectors(self) -> List[Detector]:
+    def get_detectors(self) -> List[DetectorSignature]:
         pass
 
 
 class PostgresDetectorsProvider(IDetectorsProvider):
-    def __init__(self, postgre_db: str, postgre_user: str, postgre_password: str):
+    def __init__(self, postgres_db: str, postgres_user: str, postgres_password: str):
         self.conn = psycopg2.connect(
-            database=postgre_db,
-            user=postgre_user,
-            password=postgre_password
+            database=postgres_db,
+            user=postgres_user,
+            password=postgres_password
         )
 
-    def get_detectors(self) -> List[Detector]:
+    def get_detectors(self) -> List[DetectorSignature]:
         with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute("SELECT run_id, name, classpath FROM detectors")
             rows = cursor.fetchall()
             detectors = [
-                Detector(
+                DetectorSignature(
                     run_id=row['run_id'],
                     name=row['name'],
                     classpath=row['classpath']
                 ) for row in rows
             ]
         return detectors
+
+
+class ListDetectorsProvider(IDetectorsProvider):
+    def __init__(self, detectors: List[DetectorSignature]):
+        self.detectors = detectors
+
+    def get_detectors(self) -> List[DetectorSignature]:
+        return self.detectors
+
+
+class MockDetectorsEngine:
+    def __init__(self, detector: IDetector):
+        self.detector = detector
+
+    def get_detector_by_name(self, name: str) -> Optional[IDetector]:
+        if name == 'mock_detector':
+            return self.detector
+        else:
+            return None
 
 
 class DetectorsEngine:
@@ -55,5 +74,5 @@ class DetectorsEngine:
             except:
                 logging.warning(f"Could not instantiate detector {signature.name}. Ex = " + traceback.format_exc())
 
-    def get_detector(self, name: str) -> Optional[IDetector]:
+    def get_detector_by_name(self, name: str) -> Optional[IDetector]:
         return self.detectors.get(name, None)

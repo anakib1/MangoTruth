@@ -80,6 +80,10 @@ services:
     container_name: compute
     environment:
       RABBITMQ_HOST: rabbitmq
+      POSTGRES_DB: mango-db
+      POSTGRES_USER: mango-user
+      POSTGRES_PASSWORD: password
+      NEPTUNE_TOKEN:
     networks:
       - mango-net
     depends_on:

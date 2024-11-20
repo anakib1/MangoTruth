@@ -3,7 +3,7 @@ from uuid import uuid4
 
 
 @dataclass
-class Detector:
+class DetectorSignature:
     run_id: uuid4
     name: str
     classpath: str

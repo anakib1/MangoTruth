@@ -3,10 +3,11 @@ from dataclasses import asdict
 
 import pytest
 
-from compute.engine import ComputeEngine
-from compute.mock_broker import MockMessageBroker
+from compute.core.engine import ComputeEngine
+from compute.core.mock_broker import MockMessageBroker
 from compute.models.communication import ComputeRequest
 from detectors.mocks import MockDetector
+from compute.core.detectors import MockDetectorsEngine
 
 
 @pytest.fixture
@@ -15,12 +16,13 @@ def setup_engine():
 
     mock_broker = MockMessageBroker()
 
-    engine = ComputeEngine(detectors=[mock_detector], default_detector=mock_detector, broker=mock_broker)
-    return engine, mock_detector
+    detectors = MockDetectorsEngine(mock_detector)
+    engine = ComputeEngine(detectors_engine=detectors, broker=mock_broker)
+    return engine, detectors, mock_detector
 
 
 def test_bad_detector_request(setup_engine):
-    engine, _ = setup_engine
+    engine, _, _ = setup_engine
 
     # Create a mock request
     request = ComputeRequest(
@@ -34,11 +36,11 @@ def test_bad_detector_request(setup_engine):
 
     # Verify the response structure
     assert response.request_id == "test_request_id"
-    assert response.status == "SUCCESS"
+    assert response.status == "FAILED"
 
 
 def test_broker_on_request(setup_engine):
-    engine, _ = setup_engine
+    engine, _, _ = setup_engine
     request = ComputeRequest(
         request_id="test_request_id",
         content="test_content",
@@ -49,7 +51,7 @@ def test_broker_on_request(setup_engine):
 
 
 def test_process_request(setup_engine):
-    engine, _ = setup_engine
+    engine, _, _ = setup_engine
 
     # Create a mock request
     request = ComputeRequest(
@@ -67,23 +69,23 @@ def test_process_request(setup_engine):
 
 
 def test_get_detector_by_name(setup_engine):
-    engine, mock_detector = setup_engine
+    engine, detectors, mock_detector = setup_engine
 
     # Check if the detector is returned correctly
-    detector = engine.get_detector_by_name("mock_detector")
+    detector = detectors.get_detector_by_name("mock_detector")
     assert detector == mock_detector
 
     # Check if None is returned when the detector is not found
-    detector = engine.get_detector_by_name("non_existent_detector")
-    assert detector == engine.default_detector
+    detector = detectors.get_detector_by_name("non_existent_detector")
+    assert detector is None
 
 
 def test_start_and_stop_consuming(setup_engine):
-    engine, _ = setup_engine
+    engine, _, _ = setup_engine
     engine.start_consuming()
     engine.stop_consuming()
 
 
 def test_close(setup_engine):
-    engine, _ = setup_engine
+    engine, _, _ = setup_engine
     engine.close()
