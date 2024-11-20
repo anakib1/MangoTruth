@@ -101,16 +101,56 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/detection/mass": {
+            "get": {
+                "description": "Fetch the detection statuses for multiple request IDs. Optionally filter results by userId.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get multiple detection statuses",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional userId to filter detection statuses",
+                        "name": "userId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/modules.DetectionStatus"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
         "modules.DetectionQuery": {
             "type": "object",
             "required": [
-                "requestId"
+                "request_id"
             ],
             "properties": {
-                "requestId": {
+                "request_id": {
                     "description": "RequestID is the unique identifier for the detection request\nrequired: true\nexample: f47ac10b-58cc-4372-a567-0e02b2c3d479",
                     "type": "string",
                     "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
@@ -125,6 +165,11 @@ const docTemplate = `{
                     "description": "Content to be analyzed for detection\nrequired: true\nexample: This is the content to be analyzed.",
                     "type": "string",
                     "example": "This is the content to be analyzed."
+                },
+                "detector_name": {
+                    "description": "DetectorName of detector to make inference on\nrequired: true\nexample: ghostbuster",
+                    "type": "string",
+                    "example": "ghostbuster"
                 }
             }
         },
@@ -132,10 +177,10 @@ const docTemplate = `{
             "description": "DetectionStatus includes the status of the request and the verdict",
             "type": "object",
             "required": [
-                "requestId"
+                "request_id"
             ],
             "properties": {
-                "requestId": {
+                "request_id": {
                     "description": "RequestID is the unique identifier for the detection request\nrequired: true\nexample: f47ac10b-58cc-4372-a567-0e02b2c3d479",
                     "type": "string",
                     "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"

@@ -164,5 +164,6 @@ API endpoints are available in `core/docs/swagger.json` file.
 To generate docs for core endpoints run the following command:
 
 ```bash 
- swag init -g ./core/cmd/server/main.go --output ./core/docs
+cd core 
+swag init -g ./cmd/server/main.go --output ./docs
 ```

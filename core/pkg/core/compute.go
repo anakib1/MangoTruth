@@ -89,8 +89,9 @@ func (c *ComputeRouter) Work() {
 			var resp modules.DetectionStatus
 			err := json.Unmarshal(msg.Body, &resp)
 			if err != nil {
-				slog.Warn("Failed to unmarshal message.",
+				slog.Error("Failed to unmarshal message.",
 					"Error", err)
+				c.sink <- modules.DetectionStatus{Status: models.StatusFAILURE}
 				continue
 			}
 			c.sink <- resp

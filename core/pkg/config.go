@@ -43,10 +43,11 @@ type LoggerConfig struct {
 
 type StorageConfig struct {
 	DatabaseName string
-	UserName string
-	Password string
-	DriverName string
-	HostName string
+	UserName     string
+	Password     string
+	DriverName   string
+	HostName     string
+	Port         int
 }
 
 func DefaultConfig() Config {
@@ -72,10 +73,11 @@ func DefaultConfig() Config {
 		Server: ServerConfig{Port: "8080"},
 		Storage: StorageConfig{
 			DatabaseName: "mango-db",
-			UserName: "mango-user",
-			Password: "password",
-			DriverName: "postgres",
-			HostName: "postgres",
+			UserName:     "mango-user",
+			Password:     "password",
+			DriverName:   "postgres",
+			HostName:     "postgres",
+			Port:         5432,
 		},
 	}
 }
