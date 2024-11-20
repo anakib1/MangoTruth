@@ -20,7 +20,7 @@ import (
 // @Router /api/v1/detection [get]
 func (r *MangoRest) GetDetection(c *gin.Context) {
 	var req modules.DetectionQuery
-	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Wrong format of DetectionQuery"})
 		return
 	}
@@ -39,6 +39,7 @@ func (r *MangoRest) GetDetection(c *gin.Context) {
 // @Router /api/v1/detection [put]
 func (r *MangoRest) PutDetection(c *gin.Context) {
 	var req modules.DetectionRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
@@ -49,14 +50,44 @@ func (r *MangoRest) PutDetection(c *gin.Context) {
 		return
 	}
 
+	if !r.storage.DetectorExists(req.DetectorName) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Detector does not exist"})
+		return
+	}
+
 	req.RequestId = uuid.New()
 
 	r.waitFromEngine(c, modules.ClientToServer{Msg: req})
 
 }
 
+func (r *MangoRest) GetDetectors(c *gin.Context) {
+	detectors := r.storage.GetDetectors()
+	c.JSON(http.StatusOK, gin.H{"detectors": detectors})
+}
+
+// MassGetDetection handles GET /api/v1/detection/mass
+// @Summary Get multiple detection statuses
+// @Description Fetch the detection statuses for multiple request IDs. Optionally filter results by userId.
+// @Produce  json
+// @Accept  json
+// @Param userId query string false "Optional userId to filter detection statuses"
+// @Success 200 {array} modules.DetectionStatus
+// @Failure 400 {object} map[string]string "Invalid request parameters"
+// @Router /api/v1/detection/mass [get]
+func (r *MangoRest) MassGetDetection(c *gin.Context) {
+	var req modules.MassDetectionStatusRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid userId"})
+		return
+	}
+	req.RequestId = uuid.New()
+
+	r.waitFromEngine(c, modules.ClientToServer{Msg: req})
+}
+
 func (r *MangoRest) waitFromEngine(c *gin.Context, req modules.ClientToServer) {
-	resp := make(chan modules.DetectionStatus)
+	resp := make(chan any)
 	req.Ret = resp
 
 	r.engineSink <- req

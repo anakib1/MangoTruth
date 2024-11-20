@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"log/slog"
 	"mango_truth/pkg"
 	"mango_truth/pkg/modules"
@@ -22,9 +23,15 @@ type Storage struct {
 }
 
 func NewStorage(cfg pkg.StorageConfig) *Storage {
-	db, err := sql.Open(cfg.DriverName, fmt.Sprintf("dbname=%s host=%s user=%s password=%s sslmode=disable", cfg.DatabaseName, cfg.HostName, cfg.UserName, cfg.Password))
+	db, err := sql.Open(cfg.DriverName,
+		fmt.Sprintf("dbname=%s host=%s port=%d user=%s password=%s sslmode=disable",
+			cfg.DatabaseName, cfg.HostName, cfg.Port, cfg.UserName, cfg.Password))
 	if err != nil {
 		panic(fmt.Sprintf("Can not connect to the database: %s", err.Error()))
+	}
+	err = db.PingContext(context.TODO())
+	if err != nil {
+		slog.Error(fmt.Sprintf("Can not connect to the database: %s", err.Error()))
 	}
 	return &Storage{db: db, cfg: cfg}
 }
@@ -46,6 +53,35 @@ func (s *Storage) UpdStatus(status modules.DetectionStatus) {
 	}
 }
 
+func (s *Storage) GetDetectors() []string {
+	detectors, err := models.Detectors(qm.Select("name")).All(context.TODO(), s.db)
+	switch err {
+	case nil:
+		answer := make([]string, len(detectors))
+		for i := range detectors {
+			answer[i] = detectors[i].Name
+		}
+		return answer
+	default:
+		slog.Error("Can not get detectors from storage", "error-msg", err.Error())
+		return make([]string, 0)
+	}
+}
+
+func (s *Storage) DetectorExists(name string) bool {
+	detector, err := models.Detectors(
+		qm.Select("name"),
+		qm.Where("name = ?", name),
+	).One(context.TODO(), s.db)
+	switch err {
+	case nil:
+		return detector != nil
+	default:
+		slog.Error("Can not get detector from storage", "error-msg", err.Error())
+		return false
+	}
+}
+
 func (s *Storage) GetStatus(id uuid.UUID) modules.DetectionStatus {
 	status, err := models.FindDetectionStatus(context.TODO(), s.db, id.String())
 	switch err {
@@ -57,11 +93,35 @@ func (s *Storage) GetStatus(id uuid.UUID) modules.DetectionStatus {
 		slog.Error("Error in FindDetectionStatus", "error-msg", err.Error())
 		return modules.DetectionStatus{RequestId: id, Status: models.StatusUNKNOWN}
 	}
+
+	return convertDetectionStatus(status)
+}
+
+func (s *Storage) MassStatus() []modules.DetectionStatus {
+	statuses, err := models.DetectionStatuses(qm.Limit(10)).All(context.TODO(), s.db)
+	switch err {
+	case nil:
+		// Do nothing
+	case sql.ErrNoRows:
+		return make([]modules.DetectionStatus, 0)
+	default:
+		slog.Error("Error in FindDetectionStatus", "error-msg", err.Error())
+		return make([]modules.DetectionStatus, 0)
+	}
+	ret := make([]modules.DetectionStatus, len(statuses))
+	for i, x := range statuses {
+		ret[i] = convertDetectionStatus(x)
+	}
+	return ret
+}
+
+func convertDetectionStatus(status *models.DetectionStatus) modules.DetectionStatus {
 	request_id := uuid.MustParse(status.RequestID)
 	var verdict modules.Verdict
-	err = json.Unmarshal(status.Data.Bytes, &verdict)
+	err := json.Unmarshal(status.Data.Bytes, &verdict)
 	if err != nil {
 		panic(fmt.Sprintf("Error parsing []bytes to Verdict, error: %s", err.Error()))
 	}
 	return modules.DetectionStatus{RequestId: request_id, Status: status.Status, Verdict: verdict}
+
 }

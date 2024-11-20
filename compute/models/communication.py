@@ -21,7 +21,7 @@ class ComputeRequest:
         return cls(
             request_id=data['request_id'],
             content=data['content'],
-            detector_name=data.get('detector_name', None)
+            detector_name=data['detector_name']
         )
 
 

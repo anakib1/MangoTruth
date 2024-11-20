@@ -92,13 +92,15 @@ services:
 
 
   postgres:
+    ports:
+      - "5432:5432"
     build:
       context: ./core/pkg/storage/docker
       dockerfile: Dockerfile
     networks:
       - mango-net
     container_name: postgres
-    image: postgres:1.0
+    image: postgres:16.4
     environment:
       POSTGRES_USER: mango-user
       POSTGRES_PASSWORD: password
