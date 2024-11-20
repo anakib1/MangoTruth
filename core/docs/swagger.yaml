@@ -1,7 +1,7 @@
 definitions:
   modules.DetectionQuery:
     properties:
-      requestId:
+      request_id:
         description: |-
           RequestID is the unique identifier for the detection request
           required: true
@@ -9,7 +9,7 @@ definitions:
         example: f47ac10b-58cc-4372-a567-0e02b2c3d479
         type: string
     required:
-    - requestId
+    - request_id
     type: object
   modules.DetectionRequest:
     description: DetectionRequest contains the request UUID and content to be analyzed
@@ -25,7 +25,7 @@ definitions:
   modules.DetectionStatus:
     description: DetectionStatus includes the status of the request and the verdict
     properties:
-      requestId:
+      request_id:
         description: |-
           RequestID is the unique identifier for the detection request
           required: true
@@ -47,7 +47,7 @@ definitions:
           Verdict is the result of the detection (optional)
           It can be null if no verdict is available yet
     required:
-    - requestId
+    - request_id
     type: object
   modules.Label:
     properties:
@@ -132,4 +132,31 @@ paths:
               type: string
             type: object
       summary: Submit a detection request
+  /api/v1/detection/mass:
+    get:
+      consumes:
+      - application/json
+      description: Fetch the detection statuses for multiple request IDs. Optionally
+        filter results by userId.
+      parameters:
+      - description: Optional userId to filter detection statuses
+        in: query
+        name: userId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/modules.DetectionStatus'
+            type: array
+        "400":
+          description: Invalid request parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get multiple detection statuses
 swagger: "2.0"

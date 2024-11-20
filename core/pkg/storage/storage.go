@@ -79,11 +79,35 @@ func (s *Storage) GetStatus(id uuid.UUID) modules.DetectionStatus {
 		slog.Error("Error in FindDetectionStatus", "error-msg", err.Error())
 		return modules.DetectionStatus{RequestId: id, Status: models.StatusUNKNOWN}
 	}
+
+	return convert(status)
+}
+
+func convert(status *models.DetectionStatus) modules.DetectionStatus {
 	request_id := uuid.MustParse(status.RequestID)
 	var verdict modules.Verdict
-	err = json.Unmarshal(status.Data.Bytes, &verdict)
+	err := json.Unmarshal(status.Data.Bytes, &verdict)
 	if err != nil {
 		panic(fmt.Sprintf("Error parsing []bytes to Verdict, error: %s", err.Error()))
 	}
 	return modules.DetectionStatus{RequestId: request_id, Status: status.Status, Verdict: verdict}
+
+}
+
+func (s *Storage) MassStatus() []modules.DetectionStatus {
+	statuses, err := models.DetectionStatuses(qm.Limit(10)).All(context.TODO(), s.db)
+	switch err {
+	case nil:
+		// Do nothing
+	case sql.ErrNoRows:
+		return make([]modules.DetectionStatus, 0)
+	default:
+		slog.Error("Error in FindDetectionStatus", "error-msg", err.Error())
+		return make([]modules.DetectionStatus, 0)
+	}
+	ret := make([]modules.DetectionStatus, len(statuses))
+	for i, x := range statuses {
+		ret[i] = convert(x)
+	}
+	return ret
 }

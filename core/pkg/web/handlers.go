@@ -60,8 +60,33 @@ func (r *MangoRest) GetDetectors(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"detectors": detectors})
 }
 
+// MassGetDetection handles GET /api/v1/detection/mass
+// @Summary Get multiple detection statuses
+// @Description Fetch the detection statuses for multiple request IDs. Optionally filter results by userId.
+// @Produce  json
+// @Accept  json
+// @Param userId query string false "Optional userId to filter detection statuses"
+// @Success 200 {array} modules.DetectionStatus
+// @Failure 400 {object} map[string]string "Invalid request parameters"
+// @Router /api/v1/detection/mass [get]
+func (r *MangoRest) MassGetDetection(c *gin.Context) {
+	var req modules.MassDetectionStatusRequest
+	userId, exists := c.GetQuery("userId")
+	if exists {
+		userId, err := uuid.Parse(userId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid userId"})
+			return
+		}
+		req.UserId = userId
+	}
+	req.RequestId = uuid.New()
+
+	r.waitFromEngine(c, modules.ClientToServer{Msg: req})
+}
+
 func (r *MangoRest) waitFromEngine(c *gin.Context, req modules.ClientToServer) {
-	resp := make(chan modules.DetectionStatus)
+	resp := make(chan any)
 	req.Ret = resp
 
 	r.engineSink <- req
