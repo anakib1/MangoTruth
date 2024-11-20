@@ -21,11 +21,13 @@ class IDetectorsProvider:
 
 
 class PostgresDetectorsProvider(IDetectorsProvider):
-    def __init__(self, postgres_db: str, postgres_user: str, postgres_password: str):
+    def __init__(self, postgres_host: str, postgres_db: str, postgres_user: str, postgres_password: str):
         self.conn = psycopg2.connect(
+            host=postgres_host,
             database=postgres_db,
             user=postgres_user,
-            password=postgres_password
+            password=postgres_password,
+            port=5432
         )
 
     def get_detectors(self) -> List[DetectorSignature]:

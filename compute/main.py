@@ -32,9 +32,10 @@ if __name__ == "__main__":
         broker_config = config.get("rabbitmq", dict())
         detector_config = config.get("detectors", dict())
 
-        detector_config.setdefault("postgres_db", os.getenv("POSTGRES_DB"))
-        detector_config.setdefault("postgres_user", os.getenv("POSTGRES_USER"))
-        detector_config.setdefault("postgres_password", os.getenv("POSTGRES_PASSWORD"))
+        detector_config["postgres_db"] = os.getenv("POSTGRES_DB", detector_config.get("postgres_db"))
+        detector_config["postgres_user"] = os.getenv("POSTGRES_USER", detector_config.get("postgres_user"))
+        detector_config["postgres_password"] = os.getenv("POSTGRES_PASSWORD", detector_config.get("postgres_password"))
+        detector_config["postgres_host"] = os.getenv("POSTGRES_HOST", detector_config.get("postgres_host"))
 
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         logging.info('Using config {}'.format(config))
@@ -50,7 +51,12 @@ if __name__ == "__main__":
             rabbitmq_password=get_config_value("RABBITMQ_PASSWORD", broker_config.get("password"))
         )
 
-        detection_provider = PostgresDetectorsProvider(detector_config['postgres_db'], detector_config['postgres_user'], detector_config['postgres_password'])
+        detection_provider = PostgresDetectorsProvider(
+            detector_config['postgres_host'],
+            detector_config['postgres_db'],
+            detector_config['postgres_user'],
+            detector_config['postgres_password'])
+
         nexus = NeptuneNexus()
         detector_engine = DetectorsEngine(detection_provider, nexus)
 
