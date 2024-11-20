@@ -18,7 +18,7 @@ type MangoEngine struct {
 	cfg         pkg.EngineConfig
 }
 
-func NewMangoEngine(enginsCfg pkg.EngineConfig, storageCfg pkg.StorageConfig) (
+func NewMangoEngine(enginsCfg pkg.EngineConfig, storageRef *storage.Storage) (
 	engine *MangoEngine,
 	computeSink chan modules.DetectionRequest,
 	computeFeed chan modules.DetectionStatus,
@@ -32,7 +32,7 @@ func NewMangoEngine(enginsCfg pkg.EngineConfig, storageCfg pkg.StorageConfig) (
 		feed:        engineFeed,
 		computeSink: computeSink,
 		computeFeed: computeFeed,
-		storage:     storage.NewStorage(storageCfg),
+		storage:     storageRef,
 		cfg:         enginsCfg}
 	return
 }

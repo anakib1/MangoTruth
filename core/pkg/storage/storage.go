@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"log/slog"
 	"mango_truth/pkg"
 	"mango_truth/pkg/modules"
@@ -22,9 +23,15 @@ type Storage struct {
 }
 
 func NewStorage(cfg pkg.StorageConfig) *Storage {
-	db, err := sql.Open(cfg.DriverName, fmt.Sprintf("dbname=%s host=%s user=%s password=%s sslmode=disable", cfg.DatabaseName, cfg.HostName, cfg.UserName, cfg.Password))
+	db, err := sql.Open(cfg.DriverName,
+		fmt.Sprintf("dbname=%s host=%s port=%d user=%s password=%s sslmode=disable",
+			cfg.DatabaseName, cfg.HostName, cfg.Port, cfg.UserName, cfg.Password))
 	if err != nil {
 		panic(fmt.Sprintf("Can not connect to the database: %s", err.Error()))
+	}
+	err = db.PingContext(context.TODO())
+	if err != nil {
+		slog.Error(fmt.Sprintf("Can not connect to the database: %s", err.Error()))
 	}
 	return &Storage{db: db, cfg: cfg}
 }
@@ -43,6 +50,21 @@ func (s *Storage) UpdStatus(status modules.DetectionStatus) {
 	err = new_status.Upsert(context.TODO(), s.db, true, []string{"request_id"}, boil.Infer(), boil.Infer())
 	if err != nil {
 		slog.Error("Can not insert value into storage", "error-msg", err.Error())
+	}
+}
+
+func (s *Storage) GetDetectors() []string {
+	detectors, err := models.Detectors(qm.Select("name")).All(context.TODO(), s.db)
+	switch err {
+	case nil:
+		answer := make([]string, len(detectors))
+		for i := range detectors {
+			answer[i] = detectors[i].Name
+		}
+		return answer
+	default:
+		slog.Error("Can not get detectors from storage", "error-msg", err.Error())
+		return make([]string, 0)
 	}
 }
 

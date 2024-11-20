@@ -13,69 +13,87 @@ import "testing"
 // Separating the tests thusly grants avoidance of Postgres deadlocks.
 func TestParent(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatuses)
+	t.Run("Detectors", testDetectors)
 }
 
 func TestDelete(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesDelete)
+	t.Run("Detectors", testDetectorsDelete)
 }
 
 func TestQueryDeleteAll(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesQueryDeleteAll)
+	t.Run("Detectors", testDetectorsQueryDeleteAll)
 }
 
 func TestSliceDeleteAll(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesSliceDeleteAll)
+	t.Run("Detectors", testDetectorsSliceDeleteAll)
 }
 
 func TestExists(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesExists)
+	t.Run("Detectors", testDetectorsExists)
 }
 
 func TestFind(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesFind)
+	t.Run("Detectors", testDetectorsFind)
 }
 
 func TestBind(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesBind)
+	t.Run("Detectors", testDetectorsBind)
 }
 
 func TestOne(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesOne)
+	t.Run("Detectors", testDetectorsOne)
 }
 
 func TestAll(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesAll)
+	t.Run("Detectors", testDetectorsAll)
 }
 
 func TestCount(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesCount)
+	t.Run("Detectors", testDetectorsCount)
 }
 
 func TestHooks(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesHooks)
+	t.Run("Detectors", testDetectorsHooks)
 }
 
 func TestInsert(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesInsert)
 	t.Run("DetectionStatuses", testDetectionStatusesInsertWhitelist)
+	t.Run("Detectors", testDetectorsInsert)
+	t.Run("Detectors", testDetectorsInsertWhitelist)
 }
 
 func TestReload(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesReload)
+	t.Run("Detectors", testDetectorsReload)
 }
 
 func TestReloadAll(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesReloadAll)
+	t.Run("Detectors", testDetectorsReloadAll)
 }
 
 func TestSelect(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesSelect)
+	t.Run("Detectors", testDetectorsSelect)
 }
 
 func TestUpdate(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesUpdate)
+	t.Run("Detectors", testDetectorsUpdate)
 }
 
 func TestSliceUpdateAll(t *testing.T) {
 	t.Run("DetectionStatuses", testDetectionStatusesSliceUpdateAll)
+	t.Run("Detectors", testDetectorsSliceUpdateAll)
 }

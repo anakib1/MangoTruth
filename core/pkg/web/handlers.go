@@ -55,6 +55,11 @@ func (r *MangoRest) PutDetection(c *gin.Context) {
 
 }
 
+func (r *MangoRest) GetDetectors(c *gin.Context) {
+	detectors := r.storage.GetDetectors()
+	c.JSON(http.StatusOK, gin.H{"detectors": detectors})
+}
+
 func (r *MangoRest) waitFromEngine(c *gin.Context, req modules.ClientToServer) {
 	resp := make(chan modules.DetectionStatus)
 	req.Ret = resp

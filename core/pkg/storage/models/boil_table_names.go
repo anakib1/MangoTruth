@@ -5,6 +5,8 @@ package models
 
 var TableNames = struct {
 	DetectionStatus string
+	Detectors       string
 }{
 	DetectionStatus: "detection_status",
+	Detectors:       "detectors",
 }
