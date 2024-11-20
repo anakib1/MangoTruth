@@ -11,3 +11,5 @@ python-dotenv==1.0.1
 PyYAML==6.0.2
 tomli==2.1.0
 matplotlib==3.9.2
+psycopg2==2.9.10
+neptune==1.13.0

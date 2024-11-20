@@ -5,9 +5,10 @@ from typing import Any
 import yaml
 from dotenv import load_dotenv
 
+from compute.detectors import DetectorsEngine, PostgresDetectorsProvider
 from compute.engine import ComputeEngine
 from compute.rabbitmq_broker import RabbitMQBroker
-from detectors.mocks import MockDetector
+from detectors.neptune.nexus import NeptuneNexus
 
 
 def load_config(file_path: str) -> dict:
@@ -44,16 +45,11 @@ if __name__ == "__main__":
             rabbitmq_password=get_config_value("RABBITMQ_PASSWORD", broker_config.get("password"))
         )
 
-        # Mock Initialization of Detectors
-        detectors = []
-        for idx, detector in enumerate(config["detectors"], start=1):
-            name = get_config_value(f"DETECTOR_{idx}_NAME", detector["name"])
-            labels = get_config_value(f"DETECTOR_{idx}_LABELS", ",".join(detector["labels"])).split(",")
-            detectors.append(MockDetector(detector_name=name, labels=labels))
-        default_detector = detectors[0]
+        detection_provider = PostgresDetectorsProvider('mango-truth', 'postgres', 'postgres')
+        nexus = NeptuneNexus()
+        detector_engine = DetectorsEngine(detection_provider, nexus)
 
-        # Engine init
-        engine = ComputeEngine(detectors=detectors, default_detector=default_detector, broker=broker)
+        engine = ComputeEngine(detectors_engine=detector_engine, broker=broker)
         logging.info("Starting the Compute Engine...")
         engine.start_consuming()
 
