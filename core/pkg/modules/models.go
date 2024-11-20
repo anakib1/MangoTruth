@@ -22,6 +22,8 @@ type DetectionRequest struct {
 	// required: true
 	// example: This is the content to be analyzed.
 	Content string `json:"content" example:"This is the content to be analyzed."`
+
+	DetectorName string `json:"detector_name" example:"This is the detector used for analysing."`
 }
 
 // MarshalJSON This is crutch to pass RequestId to RabbitMQ, but to ignore it from incoming messages and swagger.

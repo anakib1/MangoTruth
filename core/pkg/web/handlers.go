@@ -49,6 +49,11 @@ func (r *MangoRest) PutDetection(c *gin.Context) {
 		return
 	}
 
+	if !r.storage.DetectorExists(req.DetectorName) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Detected not exists"})
+		return
+	}
+
 	req.RequestId = uuid.New()
 
 	r.waitFromEngine(c, modules.ClientToServer{Msg: req})

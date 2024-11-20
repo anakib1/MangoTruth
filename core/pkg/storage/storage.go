@@ -68,6 +68,24 @@ func (s *Storage) GetDetectors() []string {
 	}
 }
 
+func (s *Storage) DetectorExists(name string) bool {
+	detector, err := models.Detectors(
+		qm.Select("name"),
+		qm.Where("name = ?", name),
+	).One(context.TODO(), s.db)
+	switch err {
+	case nil:
+		if detector == nil {
+			return false
+		} else {
+			return true
+		}
+	default:
+		slog.Error("Can not get detector from storage", "error-msg", err.Error())
+		return false
+	}
+}
+
 func (s *Storage) GetStatus(id uuid.UUID) modules.DetectionStatus {
 	status, err := models.FindDetectionStatus(context.TODO(), s.db, id.String())
 	switch err {
