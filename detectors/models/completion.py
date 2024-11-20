@@ -1,6 +1,6 @@
 from typing import List
-from .config import CompletionModelConfig
-from interfaces import CompletionLanguageModel
+from detectors.dna.config import CompletionModelConfig
+from detectors.interfaces import CompletionLanguageModel
 from langchain_openai import ChatOpenAI
 from langchain_core.language_models.chat_models import BaseChatModel
 

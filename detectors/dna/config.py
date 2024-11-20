@@ -4,7 +4,7 @@ from nltk.stem.porter import PorterStemmer
 from typing import Callable
 import spacy
 import math
-from models.config import CompletionModelConfig
+from detectors.models.config import CompletionModelConfig
 
 
 @dataclass

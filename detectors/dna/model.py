@@ -1,8 +1,8 @@
 from typing import List
-from models.completion import OpenAICompletionModel
-from .config import BlackBoxDnaConfig
-from .ngrams import NGramsProcessor
-from interfaces import IDetector
+from detectors.models.completion import OpenAICompletionModel
+from detectors.dna.config import BlackBoxDnaConfig
+from detectors.dna.ngrams import NGramsProcessor
+from detectors.interfaces import IDetector
 import numpy as np
 
 BLACK_BOX_DNA_BYTEARRAY = b"BlackBoxDNADetector"
