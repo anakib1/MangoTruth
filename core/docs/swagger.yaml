@@ -21,6 +21,13 @@ definitions:
           example: This is the content to be analyzed.
         example: This is the content to be analyzed.
         type: string
+      detector_name:
+        description: |-
+          DetectorName of detector to make inference on
+          required: true
+          example: ghostbuster
+        example: ghostbuster
+        type: string
     type: object
   modules.DetectionStatus:
     description: DetectionStatus includes the status of the request and the verdict

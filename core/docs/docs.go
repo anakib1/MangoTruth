@@ -165,6 +165,11 @@ const docTemplate = `{
                     "description": "Content to be analyzed for detection\nrequired: true\nexample: This is the content to be analyzed.",
                     "type": "string",
                     "example": "This is the content to be analyzed."
+                },
+                "detector_name": {
+                    "description": "DetectorName of detector to make inference on\nrequired: true\nexample: ghostbuster",
+                    "type": "string",
+                    "example": "ghostbuster"
                 }
             }
         },

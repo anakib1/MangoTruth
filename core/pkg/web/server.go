@@ -14,11 +14,11 @@ type MangoRest struct {
 	engineSink chan<- modules.ClientToServer
 }
 
-func NewMangoRest(engineSink chan<- modules.ClientToServer, storageRef *storage.Storage) *MangoRest {
+func NewMangoRest(engineSink chan<- modules.ClientToServer, storage *storage.Storage) *MangoRest {
 	r := &MangoRest{
 		Engine:     gin.Default(), // Initialize the Gin engineSink
 		engineSink: engineSink,
-		storage:    storageRef,
+		storage:    storage,
 	}
 
 	v1 := r.Group("/api/v1")

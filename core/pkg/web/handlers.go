@@ -20,7 +20,7 @@ import (
 // @Router /api/v1/detection [get]
 func (r *MangoRest) GetDetection(c *gin.Context) {
 	var req modules.DetectionQuery
-	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Wrong format of DetectionQuery"})
 		return
 	}
@@ -39,6 +39,7 @@ func (r *MangoRest) GetDetection(c *gin.Context) {
 // @Router /api/v1/detection [put]
 func (r *MangoRest) PutDetection(c *gin.Context) {
 	var req modules.DetectionRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
@@ -50,7 +51,7 @@ func (r *MangoRest) PutDetection(c *gin.Context) {
 	}
 
 	if !r.storage.DetectorExists(req.DetectorName) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Detected not exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Detector does not exist"})
 		return
 	}
 
@@ -76,14 +77,9 @@ func (r *MangoRest) GetDetectors(c *gin.Context) {
 // @Router /api/v1/detection/mass [get]
 func (r *MangoRest) MassGetDetection(c *gin.Context) {
 	var req modules.MassDetectionStatusRequest
-	userId, exists := c.GetQuery("userId")
-	if exists {
-		userId, err := uuid.Parse(userId)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid userId"})
-			return
-		}
-		req.UserId = userId
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid userId"})
+		return
 	}
 	req.RequestId = uuid.New()
 

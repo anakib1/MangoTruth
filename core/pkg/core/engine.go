@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"log/slog"
 	"mango_truth/pkg"
 	"mango_truth/pkg/modules"
@@ -18,7 +19,7 @@ type MangoEngine struct {
 	cfg         pkg.EngineConfig
 }
 
-func NewMangoEngine(enginsCfg pkg.EngineConfig, storageRef *storage.Storage) (
+func NewMangoEngine(enginsCfg pkg.EngineConfig, storage *storage.Storage) (
 	engine *MangoEngine,
 	computeSink chan modules.DetectionRequest,
 	computeFeed chan modules.DetectionStatus,
@@ -32,7 +33,7 @@ func NewMangoEngine(enginsCfg pkg.EngineConfig, storageRef *storage.Storage) (
 		feed:        engineFeed,
 		computeSink: computeSink,
 		computeFeed: computeFeed,
-		storage:     storageRef,
+		storage:     storage,
 		cfg:         enginsCfg}
 	return
 }
@@ -55,7 +56,7 @@ func (e *MangoEngine) Work() {
 					cts.Ret <- status
 
 				case modules.DetectionQuery:
-					status := e.storage.GetStatus(req.RequestId)
+					status := e.storage.GetStatus(uuid.MustParse(req.RequestId))
 					cts.Ret <- status
 
 				case modules.MassDetectionStatusRequest:

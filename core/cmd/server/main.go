@@ -17,12 +17,12 @@ func main() {
 	utils.ConfigureLogging(&cfg.Logger)
 	slog.Info("Running with config:", "config", cfg)
 
-	storageRef := storage.NewStorage(cfg.Storage)
-	engine, requests, statuses, restToEngine := core.NewMangoEngine(cfg.Engine, storageRef)
+	storageProvider := storage.NewStorage(cfg.Storage)
+	engine, requests, statuses, restToEngine := core.NewMangoEngine(cfg.Engine, storageProvider)
 	go engine.Work()
 	router := core.NewComputeRouter(cfg.Compute, requests, statuses)
 	go router.Work()
 
-	log.Fatal(web.NewMangoRest(restToEngine, storageRef).Run(":" + cfg.Server.Port))
+	log.Fatal(web.NewMangoRest(restToEngine, storageProvider).Run(":" + cfg.Server.Port))
 
 }

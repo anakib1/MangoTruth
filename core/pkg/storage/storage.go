@@ -75,11 +75,7 @@ func (s *Storage) DetectorExists(name string) bool {
 	).One(context.TODO(), s.db)
 	switch err {
 	case nil:
-		if detector == nil {
-			return false
-		} else {
-			return true
-		}
+		return detector != nil
 	default:
 		slog.Error("Can not get detector from storage", "error-msg", err.Error())
 		return false
@@ -98,18 +94,7 @@ func (s *Storage) GetStatus(id uuid.UUID) modules.DetectionStatus {
 		return modules.DetectionStatus{RequestId: id, Status: models.StatusUNKNOWN}
 	}
 
-	return convert(status)
-}
-
-func convert(status *models.DetectionStatus) modules.DetectionStatus {
-	request_id := uuid.MustParse(status.RequestID)
-	var verdict modules.Verdict
-	err := json.Unmarshal(status.Data.Bytes, &verdict)
-	if err != nil {
-		panic(fmt.Sprintf("Error parsing []bytes to Verdict, error: %s", err.Error()))
-	}
-	return modules.DetectionStatus{RequestId: request_id, Status: status.Status, Verdict: verdict}
-
+	return convertDetectionStatus(status)
 }
 
 func (s *Storage) MassStatus() []modules.DetectionStatus {
@@ -125,7 +110,18 @@ func (s *Storage) MassStatus() []modules.DetectionStatus {
 	}
 	ret := make([]modules.DetectionStatus, len(statuses))
 	for i, x := range statuses {
-		ret[i] = convert(x)
+		ret[i] = convertDetectionStatus(x)
 	}
 	return ret
+}
+
+func convertDetectionStatus(status *models.DetectionStatus) modules.DetectionStatus {
+	request_id := uuid.MustParse(status.RequestID)
+	var verdict modules.Verdict
+	err := json.Unmarshal(status.Data.Bytes, &verdict)
+	if err != nil {
+		panic(fmt.Sprintf("Error parsing []bytes to Verdict, error: %s", err.Error()))
+	}
+	return modules.DetectionStatus{RequestId: request_id, Status: status.Status, Verdict: verdict}
+
 }

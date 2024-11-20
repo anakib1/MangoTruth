@@ -9,7 +9,7 @@ type DetectionQuery struct {
 	// RequestID is the unique identifier for the detection request
 	// required: true
 	// example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-	RequestId uuid.UUID `json:"request_id" binding:"required" example:"f47ac10b-58cc-4372-a567-0e02b2c3d479"`
+	RequestId string `json:"request_id" form:"request_id" binding:"required,uuid" example:"f47ac10b-58cc-4372-a567-0e02b2c3d479"`
 }
 
 // DetectionRequest represents a detection request
@@ -23,7 +23,10 @@ type DetectionRequest struct {
 	// example: This is the content to be analyzed.
 	Content string `json:"content" example:"This is the content to be analyzed."`
 
-	DetectorName string `json:"detector_name" example:"This is the detector used for analysing."`
+	// DetectorName of detector to make inference on
+	// required: true
+	// example: ghostbuster
+	DetectorName string `json:"detector_name" example:"ghostbuster"`
 }
 
 // MassDetectionStatusRequest represents a mass status request
@@ -32,10 +35,10 @@ type MassDetectionStatusRequest struct {
 	// Is generated
 	RequestId uuid.UUID `json:"-"`
 
-	// UserId for filtering detection statusses
+	// UserId for filtering detection statuses
 	// required: false
 	// example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-	UserId uuid.UUID `json:"user_id"`
+	UserId string `json:"user_id" form:"user_id" binding:"uuid"`
 }
 
 // MarshalJSON This is crutch to pass RequestId to RabbitMQ, but to ignore it from incoming messages and swagger.
