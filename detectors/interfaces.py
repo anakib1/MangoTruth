@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Union, List, Tuple
 from uuid import uuid4
-
+from dataclasses import dataclass
 from detectors.metrics import Conclusion
 import numpy as np
 
@@ -98,3 +98,7 @@ class EstimationLanguageModel:
         :return: Tuple of text split in model's tokens and np.array representing probabilities of corresponding tokens.
         """
         pass
+
+@dataclass
+class SerializableConfig:
+    pass

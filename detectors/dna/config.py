@@ -1,18 +1,18 @@
 from dataclasses import dataclass
 from nltk.stem import StemmerI
 from nltk.stem.porter import PorterStemmer
-from typing import Callable
+from detectors.dna.functions import DnaSerializableFunction, SublogarithmFunction
+from detectors.interfaces import SerializableConfig
 import spacy
-import math
 from detectors.models.config import CompletionModelConfig
 
 
 @dataclass
-class NGramsConfig:
+class NGramsConfig(SerializableConfig):
     N_min: int
     N_max: int
     stemmer: StemmerI
-    func: Callable[[int], float]
+    func: DnaSerializableFunction
     stopwords: list[str]
 
 
@@ -23,7 +23,7 @@ class NGramsConfigGenerator(NGramsConfig):
                 N_min=4,
                 N_max=25,
                 stemmer=PorterStemmer(),
-                func=lambda n: n * math.log(n),
+                func=SublogarithmFunction(),
                 stopwords=spacy.load("en_core_web_sm").Defaults.stop_words
             )
         else:
@@ -31,7 +31,7 @@ class NGramsConfigGenerator(NGramsConfig):
 
 
 @dataclass
-class BlackBoxDnaConfig:
+class BlackBoxDnaConfig(SerializableConfig):
     truncation: float
     K: int
     threshold: float

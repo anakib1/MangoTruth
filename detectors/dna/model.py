@@ -3,13 +3,18 @@ from detectors.models.completion import OpenAICompletionModel
 from detectors.dna.config import BlackBoxDnaConfig
 from detectors.dna.ngrams import NGramsProcessor
 from detectors.interfaces import IDetector
+from detectors.dna.serialise import config_to_bytes, config_from_bytes
 import numpy as np
 
 BLACK_BOX_DNA_BYTEARRAY = b"BlackBoxDNADetector"
 
 
 class BlackBoxDNADetector(IDetector):
-    def __init__(self, config: BlackBoxDnaConfig):
+    def __init__(self, config: BlackBoxDnaConfig = None):
+        if config:
+            self._load_from_config(config)
+
+    def _load_from_config(self, config: BlackBoxDnaConfig):
         self.config = config
         self.model = OpenAICompletionModel(self.config.model_config)
         self.ngrams_processor = NGramsProcessor(self.config.ngrams_config)
@@ -32,10 +37,11 @@ class BlackBoxDNADetector(IDetector):
         else:
             return np.array([1.0, 0.0])
 
-
     def store_weights(self) -> bytes:
-        return BLACK_BOX_DNA_BYTEARRAY
+        return config_to_bytes(self.config)
 
     def load_weights(self, weights: bytes):
-        if weights != BLACK_BOX_DNA_BYTEARRAY:
-            raise TypeError("The weights are not from BlackBoxDNADetector")
+        config = config_from_bytes(weights)
+        if not isinstance(config, BlackBoxDnaConfig):
+            raise TypeError("The config should be BlackBoxDnaConfig")
+        self._load_from_config(config)

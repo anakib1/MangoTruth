@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 from pydantic import SecretStr
+from detectors.interfaces import SerializableConfig
 
 
 @dataclass
-class CompletionModelConfig:
+class CompletionModelConfig(SerializableConfig):
     api_key: SecretStr
     model_name: str
     user_prompt: str
     system_prompt: str
-    temperature: float = 0.0
+    temperature: float
+

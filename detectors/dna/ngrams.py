@@ -5,7 +5,7 @@ https://github.com/Xianjun-Yang/DNA-GPT/tree/main
 import re
 from typing import List
 from collections import Counter
-from .config import NGramsConfig
+from detectors.dna.config import NGramsConfig
 
 
 class NGramsProcessor:
