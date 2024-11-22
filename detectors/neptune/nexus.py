@@ -44,10 +44,6 @@ class NeptuneNexus(Nexus, TrainingNexus):
                                     mode='sync')
         return existing
 
-    def store_run_weights(self, run_id: uuid4, content: bytes):
-        run = self.get_or_create_run(run_id)
-        run['checkpoint'].upload(File.from_content(content, extension='.pkl'), wait=True)
-
     def load_run_weights(self, run_id: uuid4) -> bytes:
         run = self.get_run(run_id)
         if run is None:
@@ -73,8 +69,7 @@ class NeptuneNexus(Nexus, TrainingNexus):
         run[f'sys/tags'].add(conclusion.datasets)
 
         run.wait()
-
-        self.store_run_weights(run_id, conclusion.weights)
+        run['checkpoint'].upload(File.from_content(conclusion.weights, extension='.pkl'), wait=True)
 
         if extra_data is not None:
             for key, value in extra_data.items():
