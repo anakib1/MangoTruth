@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from uuid import uuid4
+import argparse
 
 import torch
 from datasets import load_dataset, concatenate_datasets
@@ -39,7 +40,8 @@ def compute_final_metrics(eval_pred):
 
 
 def perform_evaluation(eval_data, model, data_collator):
-    training_args = TrainingArguments("test_trainer", report_to="none")
+    training_args = TrainingArguments("test_trainer", report_to="none",
+                                      per_device_eval_batch_size=32)
 
     trainer = Trainer(
         model=model,
@@ -68,38 +70,59 @@ def process_data_split(split, selection_size, tokenizer):
 
 
 def main():
-    MODEL = "distilbert/distilbert-base-uncased"
-    SIZE = 5000
+    parser = argparse.ArgumentParser(description='Fine-tune a transformer model.')
+    parser.add_argument('--dataset_handle', type=str, default='anakib1/mango-truth', help='The dataset handle to use.')
+    parser.add_argument('--dataset_config', type=str, default='xlsum', help='The dataset configuration.')
+    parser.add_argument('--model_handle', type=str, default='FacebookAI/roberta-base',
+                        help='The model handle to use.')
+    parser.add_argument('--train_size', type=int, default=5000, help='Number of training examples.')
+    parser.add_argument('--test_size', type=int, default=1000, help='Number of test examples.')
+    parser.add_argument('--batch_size', type=int, default=64, help='batch size for both training and evaluation.')
 
-    TEST_SIZE = 1000
+    args = parser.parse_args()
 
-    data = load_dataset('anakib1/mango-truth', 'xlsum')
+    model_handle = args.model_handle
+    train_size = args.train_size
+    test_size = args.test_size
+    dataset_handle = args.dataset_handle
+    dataset_config = args.dataset_config
+    bs = args.batch_size
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL)
+    data = load_dataset(dataset_handle, dataset_config)
 
-    finetune_data = process_data_split(data['train'], SIZE, tokenizer).train_test_split(test_size=0.3)
-    test_data = process_data_split(data['test'], TEST_SIZE, tokenizer)
+    tokenizer = AutoTokenizer.from_pretrained(model_handle)
+
+    finetune_data = process_data_split(data['train'], train_size, tokenizer).train_test_split(test_size=0.3)
+    test_data = process_data_split(data['test'], test_size, tokenizer)
 
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     id2label = {0: "HUMAN", 1: "AI"}
     label2id = {v: k for k, v in id2label.items()}
 
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL, num_labels=2, id2label=id2label,
-                                                               label2id=label2id)
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_handle,
+        num_labels=2,
+        id2label=id2label,
+        label2id=label2id
+    )
+
+    run_surname = f"tune-{model_handle}-{train_size}"
+
     training_args = TrainingArguments(
-        output_dir="my_awesome_model",
+        output_dir=run_surname,
+        save_total_limit=3,
         learning_rate=2e-5,
-        per_device_train_batch_size=64,
-        per_device_eval_batch_size=64,
+        per_device_train_batch_size=bs,
+        per_device_eval_batch_size=bs,
         num_train_epochs=100,
         weight_decay=0.01,
         eval_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
         metric_for_best_model='f1',
-        save_total_limit=2,
         report_to="neptune",
+        fp16=True
     )
 
     trainer = Trainer(
@@ -117,7 +140,7 @@ def main():
 
     nexus = NeptuneNexus()
 
-    ret = Conclusion("empty".encode("UTF-8"), "roberta", ["xlsum"],
+    ret = Conclusion("empty".encode("UTF-8"), run_surname, [f"xlsum[{train_size}]"],
                      perform_evaluation(finetune_data["train"], model, data_collator),
                      perform_evaluation(test_data, model, data_collator))
 
