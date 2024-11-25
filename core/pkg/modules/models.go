@@ -38,7 +38,7 @@ type MassDetectionStatusRequest struct {
 	// UserId for filtering detection statuses
 	// required: false
 	// example: f47ac10b-58cc-4372-a567-0e02b2c3d479
-	UserId string `json:"user_id" form:"user_id" binding:"uuid"`
+	UserId string `json:"user_id,omitempty" form:"user_id,omitempty"`
 }
 
 // MarshalJSON This is crutch to pass RequestId to RabbitMQ, but to ignore it from incoming messages and swagger.
