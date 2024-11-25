@@ -61,6 +61,13 @@ func (r *MangoRest) PutDetection(c *gin.Context) {
 
 }
 
+// GetDetectors handles GET /api/v1/detectors
+// @Summary Get detectors
+// @Description Fetch all available detectors
+// @Produce  json
+// @Accept  json
+// @Success 200 {array} string
+// @Router /api/v1/detectors [get]
 func (r *MangoRest) GetDetectors(c *gin.Context) {
 	detectors := r.storage.GetDetectors()
 	c.JSON(http.StatusOK, gin.H{"detectors": detectors})

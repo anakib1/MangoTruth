@@ -166,4 +166,19 @@ paths:
               type: string
             type: object
       summary: Get multiple detection statuses
+  /api/v1/detectors:
+    get:
+      consumes:
+      - application/json
+      description: Fetch all available detectors
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get detectors
 swagger: "2.0"

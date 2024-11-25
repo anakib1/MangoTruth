@@ -73,7 +73,8 @@ Evaluation protocol:
 | DetectGDP           |
 | DNA-GPT             |
 | BERT                | 67M                  | 0.916     | 0.988     | 0.81      |
-| RoBERTA             | 125M                 | 0.971     | **0.997** | **0.923** |
+| RoBERTA             | 125M                 | 0.971     | **0.997** | 0.923     |
+| RoBERTA-large       | 330M                 | 0.961     | **0.997** | **0.941** |
 | -------------       | -                    | -         |           |           |
 | GPTZero             | TBD                  | TBD       | TBD       | TBD       |
 | ZeroGPT             | TBD                  | TBD       | TBD       | TBD       |

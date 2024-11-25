@@ -141,6 +141,29 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/detectors": {
+            "get": {
+                "description": "Fetch all available detectors",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get detectors",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
