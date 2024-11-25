@@ -85,9 +85,16 @@ func (r *MangoRest) GetDetectors(c *gin.Context) {
 func (r *MangoRest) MassGetDetection(c *gin.Context) {
 	var req modules.MassDetectionStatusRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid userId"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if req.UserId != "" {
+		if _, err := uuid.Parse(req.UserId); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user_id format"})
+			return
+		}
+	}
+
 	req.RequestId = uuid.New()
 
 	r.waitFromEngine(c, modules.ClientToServer{Msg: req})
