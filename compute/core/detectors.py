@@ -7,6 +7,7 @@ from detectors.interfaces import Nexus
 from typing import List, Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from detectors.mocks import MockDetector
 
 
 def get_class_constructor(classpath: str):
@@ -66,7 +67,7 @@ class MockDetectorsEngine:
 class DetectorsEngine:
     def __init__(self, provider: IDetectorsProvider, nexus: Nexus):
         self.detectors_signatures = provider.get_detectors()
-        self.detectors = {}
+        self.detectors = {"mock": MockDetector(['Human', "AI"])}
         for signature in self.detectors_signatures:
             try:
                 detector: IDetector = get_class_constructor(signature.classpath)()

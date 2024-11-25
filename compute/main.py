@@ -1,5 +1,6 @@
 import logging
 import os
+import traceback
 from typing import Any
 
 import yaml
@@ -57,7 +58,11 @@ if __name__ == "__main__":
             detector_config['postgres_user'],
             detector_config['postgres_password'])
 
-        nexus = NeptuneNexus()
+        try:
+            nexus = NeptuneNexus()
+        except Exception:
+            logging.error("Failed to connect to neptune nexus. " + traceback.format_exc())
+            nexus = None
         detector_engine = DetectorsEngine(detection_provider, nexus)
 
         engine = ComputeEngine(detectors_engine=detector_engine, broker=broker)
