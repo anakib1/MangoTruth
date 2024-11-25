@@ -85,8 +85,8 @@ services:
       POSTGRES_DB: mango-db
       POSTGRES_USER: mango-user
       POSTGRES_PASSWORD: password
-      NEPTUNE_API_TOKEN:
-      OPENAI_API_KEY:
+      NEPTUNE_API_KEY: ${NEPTUNE_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
 
     networks:
       - mango-net
