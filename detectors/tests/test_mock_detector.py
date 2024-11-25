@@ -7,7 +7,7 @@ from detectors.mocks import MockDetector  # Assuming MockDetector is saved in a 
 @pytest.fixture
 def detector():
     detector_name = "test"
-    return MockDetector(detector_name=detector_name)
+    return MockDetector()
 
 
 def test_predict_proba(detector):
@@ -15,11 +15,10 @@ def test_predict_proba(detector):
     text = "This is a test sentence."
 
     # Act
-    probabilities, explanation = detector.predict_proba(text)
+    probabilities = detector.predict_proba(text)
 
     # Assert
     assert isinstance(probabilities, np.ndarray), "Expected predict_proba to return a NumPy array"
-    assert isinstance(explanation, str), "Expected predict_proba to return a string explanation"
     assert probabilities.shape == (
         len(detector.get_labels()),), f"Expected array of shape ({len(detector.get_labels())},)"
     assert np.isclose(probabilities.sum(), 1), "Expected probabilities to sum to 1"
@@ -39,7 +38,7 @@ def test_custom_labels():
     # Arrange
     custom_labels = ['Spam', 'Not Spam']
     detector_name = "test"
-    detector = MockDetector(detector_name=detector_name, labels=custom_labels)
+    detector = MockDetector(labels=custom_labels)
 
     # Act
     labels = detector.get_labels()

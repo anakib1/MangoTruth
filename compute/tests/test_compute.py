@@ -12,7 +12,7 @@ from compute.core.detectors import MockDetectorsEngine
 
 @pytest.fixture
 def setup_engine():
-    mock_detector = MockDetector(detector_name="mock_detector", labels=["label1", "label2"])
+    mock_detector = MockDetector(labels=["label1", "label2"])
 
     mock_broker = MockMessageBroker()
 
