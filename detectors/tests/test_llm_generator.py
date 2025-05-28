@@ -1,13 +1,30 @@
+"""Unit tests for the LLMGenerator class.
+
+This module contains tests for the LLMGenerator class, which is responsible for
+generating synthetic datasets using language models. The tests cover various
+generation types, error handling, and edge cases.
+"""
+
 import unittest
 import asyncio
+from typing import Any, Dict
 from unittest.mock import AsyncMock, patch, MagicMock
 from detectors.data.generators.llm_generator import LLMGenerator
 from detectors.data.datasets.array_dataset import ArrayDataset
 from detectors.data.datasets.base import TextSample
 
 class TestLLMGenerator(unittest.TestCase):
-    def setUp(self):
-        """Set up test fixtures."""
+    """Test suite for the LLMGenerator class.
+    
+    This test suite verifies the functionality of the LLMGenerator class,
+    including dataset generation, error handling, and various generation types.
+    """
+    
+    def setUp(self) -> None:
+        """Set up test fixtures before each test method.
+        
+        Creates a mock response and a sample dataset for testing.
+        """
         # Create a mock response that matches the OpenAI API response structure
         self.mock_response = MagicMock()
         self.mock_response.choices = [
@@ -26,12 +43,26 @@ class TestLLMGenerator(unittest.TestCase):
         )
         self.source_dataset = ArrayDataset(samples=[self.source_sample])
         
-    @patch('detectors.data.generators.llm_generator.AsyncOpenAI')
-    def test_generate_dataset_rewrite(self, mock_openai_class):
-        """Test dataset generation with rewrite type."""
-        # Mock the OpenAI client
+    def _create_mock_client(self) -> AsyncMock:
+        """Create a mock OpenAI client with the standard response.
+        
+        Returns:
+            AsyncMock: A mock client with chat.completions.create configured.
+        """
         mock_client = AsyncMock()
         mock_client.chat.completions.create = AsyncMock(return_value=self.mock_response)
+        return mock_client
+        
+    @patch('detectors.data.generators.llm_generator.AsyncOpenAI')
+    def test_generate_dataset_rewrite(self, mock_openai_class: MagicMock) -> None:
+        """Test dataset generation with rewrite type.
+        
+        Verifies that:
+        1. The dataset is generated correctly
+        2. The sample has the correct attributes
+        3. The API is called with the correct parameters
+        """
+        mock_client = self._create_mock_client()
         mock_openai_class.return_value = mock_client
         
         generator = LLMGenerator(api_key="test_key")
@@ -64,10 +95,15 @@ class TestLLMGenerator(unittest.TestCase):
         self.assertEqual(call_args["messages"][1]["role"], "user")
         
     @patch('detectors.data.generators.llm_generator.AsyncOpenAI')
-    def test_generate_dataset_continue(self, mock_openai_class):
-        """Test dataset generation with continue type."""
-        mock_client = AsyncMock()
-        mock_client.chat.completions.create = AsyncMock(return_value=self.mock_response)
+    def test_generate_dataset_continue(self, mock_openai_class: MagicMock) -> None:
+        """Test dataset generation with continue type.
+        
+        Verifies that:
+        1. The dataset is generated correctly
+        2. The sample has the correct label and metadata
+        3. The API is called correctly
+        """
+        mock_client = self._create_mock_client()
         mock_openai_class.return_value = mock_client
         
         generator = LLMGenerator(api_key="test_key")
@@ -86,10 +122,15 @@ class TestLLMGenerator(unittest.TestCase):
         mock_client.chat.completions.create.assert_called_once()
         
     @patch('detectors.data.generators.llm_generator.AsyncOpenAI')
-    def test_generate_dataset_variation(self, mock_openai_class):
-        """Test dataset generation with variation type."""
-        mock_client = AsyncMock()
-        mock_client.chat.completions.create = AsyncMock(return_value=self.mock_response)
+    def test_generate_dataset_variation(self, mock_openai_class: MagicMock) -> None:
+        """Test dataset generation with variation type.
+        
+        Verifies that:
+        1. The dataset is generated correctly
+        2. The sample has the correct label and metadata
+        3. The API is called correctly
+        """
+        mock_client = self._create_mock_client()
         mock_openai_class.return_value = mock_client
         
         generator = LLMGenerator(api_key="test_key")
@@ -108,10 +149,15 @@ class TestLLMGenerator(unittest.TestCase):
         mock_client.chat.completions.create.assert_called_once()
         
     @patch('detectors.data.generators.llm_generator.AsyncOpenAI')
-    def test_generate_multiple_variations(self, mock_openai_class):
-        """Test generating multiple variations."""
-        mock_client = AsyncMock()
-        mock_client.chat.completions.create = AsyncMock(return_value=self.mock_response)
+    def test_generate_multiple_variations(self, mock_openai_class: MagicMock) -> None:
+        """Test generating multiple variations.
+        
+        Verifies that:
+        1. Multiple variations are generated correctly
+        2. Each variation has the correct author ID
+        3. The API is called the correct number of times
+        """
+        mock_client = self._create_mock_client()
         mock_openai_class.return_value = mock_client
         
         generator = LLMGenerator(api_key="test_key")
@@ -130,10 +176,15 @@ class TestLLMGenerator(unittest.TestCase):
         self.assertEqual(mock_client.chat.completions.create.call_count, 2)
         
     @patch('detectors.data.generators.llm_generator.AsyncOpenAI')
-    def test_generate_dataset_with_custom_prompts(self, mock_openai_class):
-        """Test dataset generation with custom prompts."""
-        mock_client = AsyncMock()
-        mock_client.chat.completions.create = AsyncMock(return_value=self.mock_response)
+    def test_generate_dataset_with_custom_prompts(self, mock_openai_class: MagicMock) -> None:
+        """Test dataset generation with custom prompts.
+        
+        Verifies that:
+        1. The dataset is generated correctly
+        2. The custom prompts are used correctly
+        3. The API is called with the correct messages
+        """
+        mock_client = self._create_mock_client()
         mock_openai_class.return_value = mock_client
         
         generator = LLMGenerator(api_key="test_key")
@@ -154,10 +205,14 @@ class TestLLMGenerator(unittest.TestCase):
         self.assertEqual(call_args["messages"][1]["content"], "Custom sample prompt: Test prompt")
         
     @patch('detectors.data.generators.llm_generator.AsyncOpenAI')
-    def test_generate_dataset_with_num_samples(self, mock_openai_class):
-        """Test dataset generation with limited number of samples."""
-        mock_client = AsyncMock()
-        mock_client.chat.completions.create = AsyncMock(return_value=self.mock_response)
+    def test_generate_dataset_with_num_samples(self, mock_openai_class: MagicMock) -> None:
+        """Test dataset generation with limited number of samples.
+        
+        Verifies that:
+        1. The correct number of samples is generated
+        2. The API is called the correct number of times
+        """
+        mock_client = self._create_mock_client()
         mock_openai_class.return_value = mock_client
         
         # Create a dataset with multiple samples
@@ -181,10 +236,16 @@ class TestLLMGenerator(unittest.TestCase):
         self.assertEqual(mock_client.chat.completions.create.call_count, 3)
         
     @patch('detectors.data.generators.llm_generator.AsyncOpenAI')
-    def test_generate_dataset_error_handling(self, mock_openai_class):
-        """Test error handling during generation."""
-        mock_client = AsyncMock()
-        mock_client.chat.completions.create = AsyncMock(side_effect=Exception("API Error"))
+    def test_generate_dataset_error_handling(self, mock_openai_class: MagicMock) -> None:
+        """Test error handling during generation.
+        
+        Verifies that:
+        1. API errors are handled gracefully
+        2. No samples are generated when an error occurs
+        3. The API call is still attempted
+        """
+        mock_client = self._create_mock_client()
+        mock_client.chat.completions.create.side_effect = Exception("API Error")
         mock_openai_class.return_value = mock_client
         
         generator = LLMGenerator(api_key="test_key")
@@ -199,8 +260,15 @@ class TestLLMGenerator(unittest.TestCase):
         # Verify the mock was called
         mock_client.chat.completions.create.assert_called_once()
 
-def run_async_test(coro):
-    """Helper function to run async tests."""
+def run_async_test(coro: Any) -> Any:
+    """Helper function to run async tests.
+    
+    Args:
+        coro: The coroutine to run.
+        
+    Returns:
+        The result of the coroutine.
+    """
     return asyncio.get_event_loop().run_until_complete(coro)
 
 if __name__ == '__main__':
