@@ -5,12 +5,13 @@ in the framework, including the TextSample dataclass and BaseDataset abstract cl
 """
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any, Iterator, Union
+from typing import List, Optional, Dict, Any, Iterator, Union, Sequence
 import pandas as pd
 from pathlib import Path
 import json
 import logging
 from abc import ABC, abstractmethod
+import copy
 
 logger = logging.getLogger(__name__)
 
@@ -118,19 +119,45 @@ class BaseDataset(ABC):
         """
         return len(self.samples)
     
-    def __getitem__(self, idx: Union[int, slice]) -> Union[TextSample, List[TextSample]]:
-        """Get sample(s) by index or slice.
+    def _create_subset(self, samples: List[TextSample]) -> 'BaseDataset':
+        """Create a new dataset instance with the given samples.
+        
+        This method should be overridden by subclasses to properly initialize
+        the new dataset with required arguments.
         
         Args:
-            idx: Integer index or slice to get sample(s).
+            samples: List of samples to include in the new dataset.
             
         Returns:
-            A single TextSample or list of TextSample objects.
+            A new dataset instance containing the given samples.
+        """
+        new_dataset = copy.copy(self)
+        new_dataset.samples = samples
+        return new_dataset
+    
+    def __getitem__(self, idx: Union[int, slice, Sequence[int]]) -> Union[TextSample, 'BaseDataset']:
+        """Get sample(s) by index, slice, or sequence of indices.
+        
+        Args:
+            idx: Integer index, slice, or sequence of indices to get sample(s).
+            
+        Returns:
+            A single TextSample, or a new BaseDataset containing the selected samples.
             
         Raises:
-            IndexError: If the index is out of range.
+            IndexError: If any index is out of range.
+            TypeError: If idx is not an integer, slice, or sequence of integers.
         """
-        return self.samples[idx]
+        if isinstance(idx, int):
+            return self.samples[idx]
+        elif isinstance(idx, slice):
+            # Create a new dataset with the sliced samples
+            return self._create_subset(self.samples[idx])
+        elif isinstance(idx, (list, tuple)) and all(isinstance(i, int) for i in idx):
+            # Create a new dataset with the selected samples
+            return self._create_subset([self.samples[i] for i in idx])
+        else:
+            raise TypeError("Index must be an integer, slice, or sequence of integers")
     
     def __iter__(self) -> Iterator[TextSample]:
         """Return an iterator over the samples.
@@ -169,8 +196,7 @@ class BaseDataset(ABC):
         
         splits = {}
         for name, split_df in [('train', train_df), ('val', val_df), ('test', test_df)]:
-            dataset = self.__class__()
-            dataset.samples = [
+            dataset = self._create_subset([
                 TextSample(
                     prompt=row['prompt'],
                     output=row['output'],
@@ -179,32 +205,32 @@ class BaseDataset(ABC):
                     metadata={k: v for k, v in row.items() if k not in ['prompt', 'output', 'author_id', 'label']}
                 )
                 for _, row in split_df.iterrows()
-            ]
+            ])
             splits[name] = dataset
             
         return splits
         
-    def get_samples_by_label(self, label: str) -> List[TextSample]:
+    def get_samples_by_label(self, label: str) -> 'BaseDataset':
         """Get all samples with a specific label.
         
         Args:
             label: The label to filter samples by.
             
         Returns:
-            List of TextSample objects with the specified label.
+            New BaseDataset containing samples with the specified label.
         """
-        return [sample for sample in self.samples if sample.label == label]
+        return self._create_subset([sample for sample in self.samples if sample.label == label])
         
-    def get_samples_by_author(self, author_id: str) -> List[TextSample]:
+    def get_samples_by_author(self, author_id: str) -> 'BaseDataset':
         """Get all samples from a specific author.
         
         Args:
             author_id: The author ID to filter samples by.
             
         Returns:
-            List of TextSample objects from the specified author.
+            New BaseDataset containing samples from the specified author.
         """
-        return [sample for sample in self.samples if sample.author_id == author_id]
+        return self._create_subset([sample for sample in self.samples if sample.author_id == author_id])
         
     def add_sample(self, sample: TextSample) -> None:
         """Add a single sample to the dataset.

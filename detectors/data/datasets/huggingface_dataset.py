@@ -319,3 +319,27 @@ class HuggingFaceDataset(BaseDataset):
             Dictionary mapping integer labels to string labels, or None if not set.
         """
         return self.label_mapping 
+
+    def _create_subset(self, samples: List[TextSample]) -> 'HuggingFaceDataset':
+        """Create a new dataset instance with the given samples.
+        
+        Args:
+            samples: List of samples to include in the new dataset.
+            
+        Returns:
+            A new HuggingFaceDataset instance containing the given samples.
+        """
+        # Create a new instance directly instead of using super()
+        new_dataset = HuggingFaceDataset(
+            dataset_name=self.dataset_name,
+            split=self.split,
+            config=self.config,
+            prompt_column=self.column_mapping['prompt'],
+            output_column=self.column_mapping['output'],
+            author_column=self.column_mapping['author_id'],
+            label_column=self.column_mapping['label'],
+            label_mapping=self.label_mapping,
+            **self.kwargs
+        )
+        new_dataset.samples = samples
+        return new_dataset 
