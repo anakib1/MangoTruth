@@ -1,2 +1,7 @@
 server.exe
 /out/
+*.pyc
+bin/
+.env
+.idea/
+cache/
