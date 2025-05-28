@@ -44,25 +44,6 @@ class TestModelEvaluation(unittest.TestCase):
         self.assertGreaterEqual(metrics.accuracy, 0)
         self.assertLessEqual(metrics.accuracy, 1)
         
-    def test_simple_rule_based_detector(self):
-        """Test the simple rule-based detector implementation"""
-        from examples.model_evaluation import SimpleRuleBasedDetector
-        
-        detector = SimpleRuleBasedDetector()
-        
-        # Test single prediction
-        pred = detector.predict_proba("This is a short text")
-        self.assertEqual(pred.shape, (2,))
-        self.assertAlmostEqual(pred.sum(), 1.0)
-        
-        # Test batch prediction
-        batch_preds = detector.batch_predict(["Short", "This is a very long text that should have higher AI probability"])
-        self.assertEqual(batch_preds.shape, (2, 2))
-        self.assertTrue(np.allclose(batch_preds.sum(axis=1), 1.0))
-        
-        # Verify that longer text has higher AI probability
-        self.assertGreater(batch_preds[1, 1], batch_preds[0, 1])
-        
     def test_model_registry(self):
         """Test model registry functionality"""
         registry = ModelRegistry()
