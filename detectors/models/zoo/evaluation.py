@@ -5,7 +5,7 @@ from tqdm import tqdm
 from detectors.interfaces import IDetector
 from detectors.metrics import ClassificationMetrics, SplitConclusion, ClassificationRepresentations
 from detectors.utils.training import report_classification
-from detectors.data.datasets.base import BaseDataset
+from detectors.data.datasets.interfaces.dataset_interface import TextDatasetInterface
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class ModelEvaluator:
             raise
 
     def evaluate_dataset(self, 
-                        dataset: BaseDataset,
+                        dataset: TextDatasetInterface,
                         batch_size: int = 32) -> SplitConclusion:
         """
         Evaluate model on a dataset
@@ -66,7 +66,7 @@ class ModelEvaluator:
 
 
 def evaluate(model: IDetector, 
-            dataset: BaseDataset,
+            dataset: TextDatasetInterface,
             batch_size: int = 32) -> SplitConclusion:
     """
     Convenience function to evaluate a model on a dataset

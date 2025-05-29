@@ -32,12 +32,6 @@ from detectors.data.datasets.loaders import (
     HuggingFaceLoader
 )
 
-# Legacy compatibility (to be deprecated)
-from detectors.data.datasets.base import BaseDataset
-from detectors.data.datasets.array_dataset import ArrayDataset
-from detectors.data.datasets.folder_dataset import FolderDataset
-from detectors.data.datasets.huggingface_dataset import HuggingFaceDataset
-
 __all__ = [
     # Core
     'Dataset',
@@ -56,11 +50,5 @@ __all__ = [
     
     # Loaders
     'DatasetLoader',
-    'HuggingFaceLoader',
-    
-    # Legacy (to be deprecated)
-    'BaseDataset',
-    'ArrayDataset',
-    'FolderDataset',
-    'HuggingFaceDataset'
+    'HuggingFaceLoader'
 ]

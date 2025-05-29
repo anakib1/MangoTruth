@@ -3,8 +3,7 @@ import numpy as np
 from detectors.models.zoo import ModelRegistry, HuggingFaceConfig, HuggingFaceDetector, evaluate
 from detectors.models.zoo.const_detector import ConstDetector
 from detectors.interfaces import IDetector
-from detectors.data.datasets.array_dataset import ArrayDataset
-from detectors.data.datasets.base import TextSample
+from detectors.data.datasets import Dataset, TextSample
 from typing import List
 import torch
 
@@ -22,7 +21,7 @@ class TestModelEvaluation(unittest.TestCase):
             )
             for i, label in enumerate(["human", "ai", "human", "ai", "human"])
         ]
-        self.test_dataset = ArrayDataset(samples=self.samples)
+        self.test_dataset = Dataset.from_samples(self.samples)
         
     def test_evaluation_with_const_detector(self):
         """Test evaluation with a constant detector"""
