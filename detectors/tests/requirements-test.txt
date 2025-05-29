@@ -1,0 +1,37 @@
+# Testing Dependencies for Detectors Package
+
+# Core testing framework
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+pytest-xdist>=3.0.0  # For parallel test execution
+
+# Mocking and test utilities
+mock>=4.0.0
+factory-boy>=3.2.0  # For test data factories
+freezegun>=1.2.0    # For time-based testing
+responses>=0.20.0   # For HTTP mocking
+
+# Data and ML testing utilities
+numpy>=1.21.0
+pandas>=1.3.0
+scikit-learn>=1.0.0  # For metrics testing
+
+# Documentation testing
+doctest>=0.6.0
+
+# Performance testing
+pytest-benchmark>=4.0.0
+memory-profiler>=0.60.0
+
+# Test reporting
+pytest-html>=3.1.0
+pytest-json-report>=1.5.0
+
+# Code quality in tests
+pytest-flake8>=1.1.0
+pytest-pylint>=0.19.0
+
+# Fixtures and test data
+pytest-factoryboy>=2.1.0
+pytest-fixtures>=0.1.0 
