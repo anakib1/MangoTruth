@@ -1,0 +1,60 @@
+# RoBERTa Base Configuration
+# This file demonstrates the new configuration-driven training approach
+
+model:
+  model_name: "FacebookAI/roberta-base"
+  tokenizer_name: "FacebookAI/roberta-base"
+  num_labels: 2
+  max_length: 512
+  cache_dir: "./model_cache"
+
+training:
+  # Model identifier
+  model_name: "FacebookAI/roberta-base"
+  
+  # Data configuration
+  dataset_handle: "anakib1/mango-truth"
+  dataset_config: "xlsum"
+  train_size: 5000
+  test_size: 1000
+  
+  # Training hyperparameters
+  epochs: 10
+  batch_size: 64
+  learning_rate: 2e-5
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  
+  # Model configuration
+  num_labels: 2
+  max_length: 512
+  
+  # Optimization
+  optimizer_name: "adamw_torch"
+  scheduler_type: "linear"
+  gradient_accumulation_steps: 1
+  max_grad_norm: 1.0
+  
+  # Training efficiency
+  fp16: true
+  dataloader_num_workers: 0
+  
+  # Validation and saving
+  validation_strategy: "epoch"
+  save_strategy: "epoch"
+  save_total_limit: 3
+  
+  # Early stopping
+  early_stopping: true
+  early_stopping_patience: 3
+  metric_for_best_model: "eval_loss"
+  greater_is_better: false
+  
+  # Experiment tracking
+  push_to_hub: false
+
+dataset:
+  processor:
+    human_label: 0
+    ai_label: 3
+    max_length: 15000 

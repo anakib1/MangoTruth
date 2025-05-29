@@ -62,8 +62,10 @@ class NeptuneNexus(Nexus, TrainingNexus):
             for k, v in asdict(concl.metrics).items():
                 run[f'metrics/{split}/{k}'] = v
 
-            for k, v in asdict(concl.representations).items():
-                run[f'charts/{split}/{k}'].upload(v, wait=True)
+            # Only upload representations if they exist
+            if concl.representations is not None:
+                for k, v in asdict(concl.representations).items():
+                    run[f'charts/{split}/{k}'].upload(v, wait=True)
 
         run[f'sys/tags'].add(conclusion.detector_handle)
         run[f'sys/tags'].add(conclusion.datasets)
@@ -73,6 +75,9 @@ class NeptuneNexus(Nexus, TrainingNexus):
 
         if extra_data is not None:
             for key, value in extra_data.items():
+                # Convert lists to strings for Neptune compatibility
+                if isinstance(value, list):
+                    value = str(value)
                 run[key] = value
 
         run.wait()

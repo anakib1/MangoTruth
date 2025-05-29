@@ -1,6 +1,7 @@
 from typing import List, Optional, Dict, Any
 import numpy as np
 import torch
+import io
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from detectors.interfaces import IDetector
 from detectors.models.zoo.configs import HuggingFaceConfig
@@ -68,13 +69,13 @@ class HuggingFaceDetector(IDetector):
 
     def store_weights(self) -> bytes:
         """Store model weights"""
-        buffer = torch.BytesIO()
+        buffer = io.BytesIO()
         torch.save(self.model.state_dict(), buffer)
         return buffer.getvalue()
 
     def load_weights(self, weights: bytes) -> None:
         """Load model weights"""
-        buffer = torch.BytesIO(weights)
+        buffer = io.BytesIO(weights)
         state_dict = torch.load(buffer, map_location=self.device)
         self.model.load_state_dict(state_dict)
 
