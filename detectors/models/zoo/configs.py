@@ -63,4 +63,50 @@ class HuggingFaceConfig(ModelConfig):
             "model_kwargs": self.model_kwargs,
             "tokenizer_kwargs": self.tokenizer_kwargs
         })
+        return base_dict
+
+
+@dataclass
+class PerplexityConfig(ModelConfig):
+    """Configuration for Perplexity-based models"""
+    model_type: str = "perplexity"
+    perplexity_threshold: Optional[float] = None
+    scaling_factor: Optional[float] = None
+    use_openai: bool = False
+    openai_model: str = "gpt-3.5-turbo-instruct"
+
+    def to_dict(self) -> Dict[str, Any]:
+        base_dict = super().to_dict()
+        base_dict.update({
+            "perplexity_threshold": self.perplexity_threshold,
+            "scaling_factor": self.scaling_factor,
+            "use_openai": self.use_openai,
+            "openai_model": self.openai_model
+        })
+        return base_dict
+
+
+@dataclass
+class GhostbusterConfig(ModelConfig):
+    """Configuration for Ghostbuster models"""
+    model_type: str = "ghostbuster"
+    estimator_models: List[str] = field(default_factory=list)
+    feature_extraction_params: Dict[str, Any] = field(default_factory=dict)
+    classifier_params: Dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self):
+        if not self.estimator_models:
+            self.estimator_models = [
+                "gpt2",
+                "gpt2-medium", 
+                "gpt2-large"
+            ]
+
+    def to_dict(self) -> Dict[str, Any]:
+        base_dict = super().to_dict()
+        base_dict.update({
+            "estimator_models": self.estimator_models,
+            "feature_extraction_params": self.feature_extraction_params,
+            "classifier_params": self.classifier_params
+        })
         return base_dict 
