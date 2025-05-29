@@ -11,8 +11,7 @@ import json
 import asyncio
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion
-from detectors.data.datasets.base import BaseDataset, TextSample
-from detectors.data.datasets.array_dataset import ArrayDataset
+from detectors.data.datasets import Dataset, TextSample
 
 logger = logging.getLogger(__name__)
 
@@ -72,12 +71,12 @@ class LLMGenerator:
         self.model = model
         
     async def generate_dataset(self, 
-                             source_dataset: BaseDataset,
+                             source_dataset: Dataset,
                              generation_type: GenerationType = "rewrite",
                              system_prompt: Optional[str] = None,
                              per_sample_prompt: Optional[str] = None,
                              num_samples: Optional[int] = None,
-                             model_label: str = "gpt-4") -> BaseDataset:
+                             model_label: str = "gpt-4") -> Dataset:
         """Generate a synthetic dataset based on the source dataset.
         
         Args:
@@ -100,7 +99,8 @@ class LLMGenerator:
         system_prompt = system_prompt or DEFAULT_SYSTEM_PROMPTS[generation_type]
         per_sample_prompt = per_sample_prompt or DEFAULT_SAMPLE_PROMPTS[generation_type]
         
-        samples = source_dataset.samples[:num_samples] if num_samples else source_dataset.samples
+        # Get samples from dataset (slice if num_samples specified)
+        samples = list(source_dataset)[:num_samples] if num_samples else list(source_dataset)
         generated_samples = []
         
         for sample in samples:
@@ -116,7 +116,7 @@ class LLMGenerator:
             except Exception as e:
                 logger.warning(f"Failed to generate sample: {e}")
                 
-        return ArrayDataset(samples=generated_samples)
+        return Dataset.from_samples(generated_samples)
         
     async def _generate_single_sample(self,
                                     sample: TextSample,
@@ -169,10 +169,10 @@ class LLMGenerator:
         )
         
     async def generate_multiple_variations(self,
-                                         source_dataset: BaseDataset,
+                                         source_dataset: Dataset,
                                          num_variations: int = DEFAULT_NUM_VARIATIONS,
                                          model_label: str = "gpt-4",
-                                         **kwargs) -> BaseDataset:
+                                         **kwargs) -> Dataset:
         """Generate multiple variations of each sample in the source dataset.
         
         Args:
@@ -192,6 +192,6 @@ class LLMGenerator:
                 model_label=f"{model_label}-variation-{i}",
                 **kwargs
             )
-            all_generated.extend(variation_dataset.samples)
+            all_generated.extend(variation_dataset.to_list())
             
-        return ArrayDataset(samples=all_generated) 
+        return Dataset.from_samples(all_generated) 

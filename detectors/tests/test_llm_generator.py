@@ -10,8 +10,7 @@ import asyncio
 from typing import Any, Dict
 from unittest.mock import AsyncMock, patch, MagicMock
 from detectors.data.generators.llm_generator import LLMGenerator
-from detectors.data.datasets.array_dataset import ArrayDataset
-from detectors.data.datasets.base import TextSample
+from detectors.data.datasets import Dataset, TextSample
 
 class TestLLMGenerator(unittest.TestCase):
     """Test suite for the LLMGenerator class.
@@ -41,7 +40,7 @@ class TestLLMGenerator(unittest.TestCase):
             author_id="human",
             label="human"
         )
-        self.source_dataset = ArrayDataset(samples=[self.source_sample])
+        self.source_dataset = Dataset.from_samples([self.source_sample])
         
     def _create_mock_client(self) -> AsyncMock:
         """Create a mock OpenAI client with the standard response.
@@ -73,10 +72,10 @@ class TestLLMGenerator(unittest.TestCase):
         ))
         
         # Verify the result
-        self.assertIsInstance(result, ArrayDataset)
-        self.assertEqual(len(result.samples), 1)
+        self.assertIsInstance(result, Dataset)
+        self.assertEqual(len(result), 1)
         
-        sample = result.samples[0]
+        sample = result[0]
         self.assertEqual(sample.prompt, "Test prompt")
         self.assertEqual(sample.output, "Generated output")
         self.assertEqual(sample.author_id, "gpt-4-generator")
@@ -113,10 +112,10 @@ class TestLLMGenerator(unittest.TestCase):
             model_label="claude"
         ))
         
-        self.assertIsInstance(result, ArrayDataset)
-        self.assertEqual(len(result.samples), 1)
-        self.assertEqual(result.samples[0].label, "claude")
-        self.assertEqual(result.samples[0].metadata["generation_type"], "continue")
+        self.assertIsInstance(result, Dataset)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].label, "claude")
+        self.assertEqual(result[0].metadata["generation_type"], "continue")
         
         # Verify the mock was called correctly
         mock_client.chat.completions.create.assert_called_once()
@@ -140,10 +139,10 @@ class TestLLMGenerator(unittest.TestCase):
             model_label="gpt-3.5"
         ))
         
-        self.assertIsInstance(result, ArrayDataset)
-        self.assertEqual(len(result.samples), 1)
-        self.assertEqual(result.samples[0].label, "gpt-3.5")
-        self.assertEqual(result.samples[0].metadata["generation_type"], "variation")
+        self.assertIsInstance(result, Dataset)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].label, "gpt-3.5")
+        self.assertEqual(result[0].metadata["generation_type"], "variation")
         
         # Verify the mock was called correctly
         mock_client.chat.completions.create.assert_called_once()
@@ -167,10 +166,10 @@ class TestLLMGenerator(unittest.TestCase):
             model_label="gpt-4"
         ))
         
-        self.assertIsInstance(result, ArrayDataset)
-        self.assertEqual(len(result.samples), 2)
-        self.assertEqual(result.samples[0].author_id, "gpt-4-variation-0-generator")
-        self.assertEqual(result.samples[1].author_id, "gpt-4-variation-1-generator")
+        self.assertIsInstance(result, Dataset)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0].author_id, "gpt-4-variation-0-generator")
+        self.assertEqual(result[1].author_id, "gpt-4-variation-1-generator")
         
         # Verify the mock was called the correct number of times
         self.assertEqual(mock_client.chat.completions.create.call_count, 2)
@@ -195,8 +194,8 @@ class TestLLMGenerator(unittest.TestCase):
             model_label="gpt-4"
         ))
         
-        self.assertIsInstance(result, ArrayDataset)
-        self.assertEqual(len(result.samples), 1)
+        self.assertIsInstance(result, Dataset)
+        self.assertEqual(len(result), 1)
         
         # Verify the mock was called with custom prompts
         mock_client.chat.completions.create.assert_called_once()
@@ -220,7 +219,7 @@ class TestLLMGenerator(unittest.TestCase):
             TextSample(prompt=f"Prompt {i}", output=f"Output {i}", author_id="human", label="human")
             for i in range(5)
         ]
-        dataset = ArrayDataset(samples=samples)
+        dataset = Dataset.from_samples(samples)
         
         generator = LLMGenerator(api_key="test_key")
         result = run_async_test(generator.generate_dataset(
@@ -229,8 +228,8 @@ class TestLLMGenerator(unittest.TestCase):
             model_label="gpt-4"
         ))
         
-        self.assertIsInstance(result, ArrayDataset)
-        self.assertEqual(len(result.samples), 3)
+        self.assertIsInstance(result, Dataset)
+        self.assertEqual(len(result), 3)
         
         # Verify the mock was called the correct number of times
         self.assertEqual(mock_client.chat.completions.create.call_count, 3)
@@ -254,8 +253,8 @@ class TestLLMGenerator(unittest.TestCase):
             model_label="gpt-4"
         ))
         
-        self.assertIsInstance(result, ArrayDataset)
-        self.assertEqual(len(result.samples), 0)  # No samples should be generated due to error
+        self.assertIsInstance(result, Dataset)
+        self.assertEqual(len(result), 0)  # No samples should be generated due to error
         
         # Verify the mock was called
         mock_client.chat.completions.create.assert_called_once()
