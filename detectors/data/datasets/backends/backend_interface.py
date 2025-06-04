@@ -5,7 +5,8 @@ Backends are responsible for how data is actually stored and accessed.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Optional, Dict, Any, Iterator, Union, Sequence, TypeVar, Generic
+from typing import List, Union, Sequence, TypeVar, Generic
+
 import numpy as np
 
 T = TypeVar('T')
@@ -99,7 +100,7 @@ class StorageBackend(ABC, Generic[T]):
     
     @abstractmethod
     def load(self, path: str) -> None:
-        """Load the backend from disk.
+        """Load the backend from the disk.
         
         Args:
             path: Path to load the backend from.
@@ -113,7 +114,7 @@ class StorageBackend(ABC, Generic[T]):
     
     @abstractmethod
     def get_indices(self) -> np.ndarray:
-        """Get array of valid indices.
+        """Get an array of valid indices.
         
         Returns:
             NumPy array of valid indices.

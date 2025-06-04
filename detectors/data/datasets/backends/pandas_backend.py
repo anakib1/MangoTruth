@@ -4,11 +4,13 @@ This module provides a pandas DataFrame-based storage backend for datasets.
 """
 
 from typing import List, Union, Sequence, Dict, Any, Optional
+
 import numpy as np
 import pandas as pd
-import sys
+
 from detectors.data.datasets.backends.backend_interface import StorageBackend
 from detectors.data.datasets.interfaces.dataset_interface import TextSample
+
 
 class PandasBackend(StorageBackend[TextSample]):
     """Pandas DataFrame storage backend for TextSample data.
@@ -21,7 +23,7 @@ class PandasBackend(StorageBackend[TextSample]):
     """
     
     def __init__(self, df: Optional[pd.DataFrame] = None) -> None:
-        """Initialize the backend with optional DataFrame.
+        """Initialize the backend with an optional DataFrame.
         
         Args:
             df: Optional initial DataFrame.
@@ -90,7 +92,7 @@ class PandasBackend(StorageBackend[TextSample]):
         df_copy.to_parquet(path, engine='pyarrow')
     
     def load(self, path: str) -> None:
-        """Load the backend from disk using parquet format."""
+        """Load the backend from the disk using parquet format."""
         self.df = pd.read_parquet(path, engine='pyarrow')
         # Convert JSON strings back to dictionaries
         self.df['metadata'] = self.df['metadata'].apply(
@@ -102,7 +104,7 @@ class PandasBackend(StorageBackend[TextSample]):
         return PandasBackend(self.df.copy())
     
     def get_indices(self) -> np.ndarray:
-        """Get array of valid indices."""
+        """Get an array of valid indices."""
         return np.arange(len(self.df))
     
     def _sample_to_dict(self, sample: TextSample) -> Dict[str, Any]:
@@ -127,7 +129,7 @@ class PandasBackend(StorageBackend[TextSample]):
     
     # Additional pandas-specific methods
     def query(self, expr: str) -> 'PandasBackend':
-        """Query the DataFrame using pandas query syntax.
+        """Query the DataFrame using panda query syntax.
         
         Args:
             expr: Query expression.

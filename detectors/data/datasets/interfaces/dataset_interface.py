@@ -135,10 +135,10 @@ class TextDatasetInterface(DatasetInterface[TextSample]):
     
     @abstractmethod
     def get_labels(self) -> List[str]:
-        """Get list of unique labels in the dataset."""
+        """Get a list of unique labels in the dataset."""
         pass
     
     @abstractmethod
     def get_authors(self) -> List[str]:
-        """Get list of unique authors in the dataset."""
+        """Get a list of unique authors in the dataset."""
         pass 

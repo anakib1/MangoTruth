@@ -97,7 +97,7 @@ class HuggingFaceTrainingConfig(BaseTrainingConfig):
     dataloader_pin_memory: bool = True
     
     # Evaluation
-    evaluation_strategy: str = "epoch"  # Alias for validation_strategy
+    eval_strategy: str = "epoch"  # Alias for validation_strategy
     eval_steps: Optional[int] = None  # Alias for validation_steps
     eval_accumulation_steps: Optional[int] = None
     per_device_train_batch_size: Optional[int] = None
@@ -129,8 +129,8 @@ class HuggingFaceTrainingConfig(BaseTrainingConfig):
             self.per_device_eval_batch_size = self.batch_size
         
         # Sync evaluation settings
-        if self.evaluation_strategy != self.validation_strategy:
-            self.evaluation_strategy = self.validation_strategy
+        if self.eval_strategy != self.validation_strategy:
+            self.eval_strategy = self.validation_strategy
         if self.eval_steps is None and self.validation_steps is not None:
             self.eval_steps = self.validation_steps
     
@@ -145,7 +145,7 @@ class HuggingFaceTrainingConfig(BaseTrainingConfig):
             "learning_rate": self.learning_rate,
             "logging_steps": self.logging_steps,
             "save_strategy": self.save_strategy,
-            "evaluation_strategy": self.evaluation_strategy,
+            "eval_strategy": self.eval_strategy,
             "load_best_model_at_end": self.early_stopping,
             "metric_for_best_model": self.metric_for_best_model,
             "greater_is_better": self.greater_is_better,
@@ -217,7 +217,7 @@ class HuggingFaceTrainingConfig(BaseTrainingConfig):
             "tf32": self.tf32,
             "dataloader_num_workers": self.dataloader_num_workers,
             "dataloader_pin_memory": self.dataloader_pin_memory,
-            "evaluation_strategy": self.evaluation_strategy,
+            "eval_strategy": self.eval_strategy,
             "eval_steps": self.eval_steps,
             "eval_accumulation_steps": self.eval_accumulation_steps,
             "per_device_train_batch_size": self.per_device_train_batch_size,

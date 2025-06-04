@@ -177,7 +177,7 @@ class TestHuggingFaceTrainingConfig:
             validation_strategy="steps",
             validation_steps=100
         )
-        assert config.evaluation_strategy == "steps"
+        assert config.eval_strategy == "steps"
         assert config.eval_steps == 100
     
     def test_to_hf_training_args(self):

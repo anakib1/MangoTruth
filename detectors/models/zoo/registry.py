@@ -18,20 +18,24 @@ logger = logging.getLogger(__name__)
 
 
 class ModelRegistry:
-    """Enhanced registry for managing available models with Nexus integration.
+    """Enhanced registry for managing available models with optional Nexus integration.
     
     This registry supports:
     - Local model registration and instantiation
-    - Loading pre-trained models from HuggingFace Hub via Nexus
+    - Loading pre-trained models from any Nexus implementation
     - Default model presets for easy usage
     - Model discovery and recommendation
+    
+    The registry works with any Nexus implementation (Neptune, HuggingFace, etc.)
+    and provides fallback mechanisms when specific features aren't available.
     """
     
     def __init__(self, nexus: Optional[Nexus] = None):
         """Initialize the model registry.
         
         Args:
-            nexus: Nexus instance for loading pre-trained models from remote storage
+            nexus: Optional Nexus instance for loading pre-trained models from remote storage.
+                   Can be any implementation (NeptuneNexus, HuggingFaceNexus, etc.)
         """
         self.nexus = nexus
         self._models: Dict[str, Type[IDetector]] = {}
@@ -99,8 +103,11 @@ class ModelRegistry:
     def load_pretrained_model(self, model_name: str, **kwargs) -> IDetector:
         """Load a pre-trained model from the registry or remote storage.
         
+        This method works with any Nexus implementation by using only the core
+        Nexus interface methods (load_run_weights, store_run_weights).
+        
         Args:
-            model_name: Name of the pre-trained model or HuggingFace repo ID
+            model_name: Name of the pre-trained model, run ID, or model identifier
             **kwargs: Additional configuration parameters
             
         Returns:
@@ -109,55 +116,50 @@ class ModelRegistry:
         Raises:
             ValueError: If model not found or nexus not configured
         """
-        # Check if it's a known pre-trained model
+        # First, check if it's a known pre-trained model with metadata
         model_info = get_model_info(model_name)
         if model_info:
             return self._load_from_pretrained_info(model_info, **kwargs)
         
-        # Try to load from HuggingFace Hub directly
-        if self.nexus and "/" in model_name:
+        # Check if it's a UUID (run_id)
+        try:
+            run_id = UUID(model_name)
+            return self._load_from_run_id(run_id, **kwargs)
+        except ValueError:
+            pass
+        
+        # Check if it looks like a repo ID and we have a HuggingFace-capable nexus
+        if "/" in model_name and self._is_huggingface_nexus():
             return self._load_from_hub_repo(model_name, **kwargs)
         
         # Fall back to regular model loading
         if model_name in self._models:
             return self.get_model(model_name, **kwargs)
             
-        raise ValueError(f"Pre-trained model '{model_name}' not found. "
-                        f"Available models: {list(PRETRAINED_MODELS.keys())}")
+        raise ValueError(
+            f"Model '{model_name}' not found. Available options:\n"
+            f"- Pre-trained models: {list(PRETRAINED_MODELS.keys())}\n"
+            f"- Registered models: {list(self._models.keys())}\n"
+            f"- Run UUIDs (if nexus available): {bool(self.nexus)}"
+        )
 
     def _load_from_pretrained_info(self, model_info: PretrainedModelInfo, **kwargs) -> IDetector:
         """Load model from pre-trained model information."""
-        if not self.nexus:
-            raise ValueError("Nexus is required to load pre-trained models from remote storage")
-        
         # Get the model class
-        if model_info.model_class == "HuggingFaceDetector":
-            from detectors.models.zoo.implementations import HuggingFaceDetector
-            model_class = HuggingFaceDetector
-        elif model_info.model_class == "PerplexityModel":
-            from detectors.perplexity.model import PerplexityModel
-            model_class = PerplexityModel
-        elif model_info.model_class == "GhostbusterDetector":
-            from detectors.ghostbuster.model import GhostbusterDetector
-            model_class = GhostbusterDetector
-        else:
-            raise ValueError(f"Unknown model class: {model_info.model_class}")
+        model_class = self._get_model_class(model_info.model_class)
         
         # Update config with any provided kwargs
         config_dict = model_info.config.to_dict()
         config_dict.update(kwargs)
         
         # Create config
-        if isinstance(model_info.config, HuggingFaceConfig):
-            config = HuggingFaceConfig(**config_dict)
-        else:
-            config = type(model_info.config)(**config_dict)
+        config = self._create_config_instance(model_info.config, config_dict)
         
         # Create model instance
         model = model_class(config)
         
-        # Load weights if available
-        if model_info.run_id:
+        # Load weights if available and we have a nexus
+        if model_info.run_id and self.nexus:
             try:
                 run_id = UUID(model_info.run_id)
                 weights = self.nexus.load_run_weights(run_id)
@@ -165,48 +167,137 @@ class ModelRegistry:
                 logger.info(f"Loaded pre-trained weights for {model_info.name}")
             except Exception as e:
                 logger.warning(f"Failed to load pre-trained weights for {model_info.name}: {e}")
+        elif model_info.run_id and not self.nexus:
+            logger.warning(f"No nexus available to load weights for {model_info.name}")
         
         return model
 
-    def _load_from_hub_repo(self, repo_id: str, **kwargs) -> IDetector:
-        """Load model directly from HuggingFace Hub repository."""
+    def _load_from_run_id(self, run_id: UUID, **kwargs) -> IDetector:
+        """Load model directly from a run ID using any Nexus implementation."""
         if not self.nexus:
-            raise ValueError("Nexus is required to load models from HuggingFace Hub")
+            raise ValueError("Nexus is required to load models from run IDs")
         
         try:
-            # Extract run_id from repo_id (assuming format: namespace/plagiarism-detector-{run_id})
+            # Try to get metadata if the nexus supports it
+            metadata = self._get_run_metadata(run_id)
+            
+            if metadata:
+                # Use metadata to determine model type
+                detector_handle = metadata.get('detector_handle', 'huggingface')
+                model_class = self._determine_model_class_from_handle(detector_handle)
+                
+                # Create default config and update with kwargs
+                config = self._create_default_config_for_class(model_class, **kwargs)
+            else:
+                # Fallback: assume HuggingFace model
+                logger.warning(f"No metadata available for run {run_id}, assuming HuggingFace model")
+                from detectors.models.zoo.implementations import HuggingFaceDetector
+                model_class = HuggingFaceDetector
+                config = HuggingFaceConfig(
+                    model_name="bert-base-uncased",  # Default, will be overridden by weights
+                    **kwargs
+                )
+            
+            # Create model and load weights
+            model = model_class(config)
+            weights = self.nexus.load_run_weights(run_id)
+            model.load_weights(weights)
+            
+            logger.info(f"Successfully loaded model from run {run_id}")
+            return model
+            
+        except Exception as e:
+            logger.error(f"Failed to load model from run {run_id}: {e}")
+            raise ValueError(f"Failed to load model from run {run_id}: {e}")
+
+    def _load_from_hub_repo(self, repo_id: str, **kwargs) -> IDetector:
+        """Load model from HuggingFace Hub repository (only if HuggingFace nexus is available)."""
+        if not self._is_huggingface_nexus():
+            raise ValueError("HuggingFace Hub loading requires HuggingFaceNexus")
+        
+        try:
+            # Extract run_id from repo_id (HuggingFace-specific format)
             if "plagiarism-detector-" in repo_id:
                 run_id_str = repo_id.split("plagiarism-detector-")[-1]
                 run_id = UUID(run_id_str)
-                
-                # Try to get metadata first
-                if hasattr(self.nexus, 'get_model_metadata'):
-                    metadata = self.nexus.get_model_metadata(run_id)
-                    if metadata:
-                        # Create model based on metadata
-                        detector_handle = metadata.get('detector_handle', 'huggingface')
-                        
-                        if 'huggingface' in detector_handle.lower():
-                            from detectors.models.zoo.implementations import HuggingFaceDetector
-                            config = HuggingFaceConfig(
-                                model_name="bert-base-uncased",  # Default, will be overridden by weights
-                                **kwargs
-                            )
-                            model = HuggingFaceDetector(config)
-                        else:
-                            raise ValueError(f"Unsupported detector handle: {detector_handle}")
-                        
-                        # Load weights
-                        weights = self.nexus.load_run_weights(run_id)
-                        model.load_weights(weights)
-                        
-                        return model
-            
-            raise ValueError(f"Could not parse run_id from repo_id: {repo_id}")
+                return self._load_from_run_id(run_id, **kwargs)
+            else:
+                raise ValueError(f"Cannot parse run_id from repo_id: {repo_id}")
             
         except Exception as e:
-            logger.error(f"Failed to load model from {repo_id}: {e}")
+            logger.error(f"Failed to load model from HuggingFace Hub {repo_id}: {e}")
             raise ValueError(f"Failed to load model from HuggingFace Hub: {e}")
+
+    def _get_model_class(self, model_class_name: str) -> Type[IDetector]:
+        """Get model class by name."""
+        if model_class_name == "HuggingFaceDetector":
+            from detectors.models.zoo.implementations import HuggingFaceDetector
+            return HuggingFaceDetector
+        elif model_class_name == "PerplexityModel":
+            from detectors.perplexity.model import PerplexityModel
+            return PerplexityModel
+        elif model_class_name == "GhostbusterDetector":
+            from detectors.ghostbuster.model import GhostbusterDetector
+            return GhostbusterDetector
+        else:
+            raise ValueError(f"Unknown model class: {model_class_name}")
+
+    def _create_config_instance(self, original_config: ModelConfig, config_dict: Dict) -> ModelConfig:
+        """Create a config instance of the appropriate type."""
+        if isinstance(original_config, HuggingFaceConfig):
+            return HuggingFaceConfig(**config_dict)
+        else:
+            return type(original_config)(**config_dict)
+
+    def _is_huggingface_nexus(self) -> bool:
+        """Check if the current nexus is a HuggingFace nexus."""
+        return (self.nexus and 
+                hasattr(self.nexus, 'get_model_metadata') and 
+                hasattr(self.nexus, 'list_available_models'))
+
+    def _get_run_metadata(self, run_id: UUID) -> Optional[Dict]:
+        """Get metadata for a run if the nexus supports it."""
+        if hasattr(self.nexus, 'get_model_metadata'):
+            try:
+                return self.nexus.get_model_metadata(run_id)
+            except Exception as e:
+                logger.debug(f"Failed to get metadata for run {run_id}: {e}")
+        return None
+
+    def _determine_model_class_from_handle(self, detector_handle: str) -> Type[IDetector]:
+        """Determine model class from detector handle."""
+        handle_lower = detector_handle.lower()
+        
+        if 'huggingface' in handle_lower or 'bert' in handle_lower or 'roberta' in handle_lower:
+            from detectors.models.zoo.implementations import HuggingFaceDetector
+            return HuggingFaceDetector
+        elif 'perplexity' in handle_lower or 'gpt' in handle_lower:
+            from detectors.perplexity.model import PerplexityModel
+            return PerplexityModel
+        elif 'ghostbuster' in handle_lower:
+            from detectors.ghostbuster.model import GhostbusterDetector
+            return GhostbusterDetector
+        else:
+            # Default to HuggingFace
+            from detectors.models.zoo.implementations import HuggingFaceDetector
+            return HuggingFaceDetector
+
+    def _create_default_config_for_class(self, model_class: Type[IDetector], **kwargs) -> ModelConfig:
+        """Create a default config for a model class."""
+        if 'HuggingFace' in model_class.__name__:
+            return HuggingFaceConfig(
+                model_name="bert-base-uncased",
+                **kwargs
+            )
+        else:
+            # For other model types, we'd need their specific config classes
+            # For now, return a basic config
+            from detectors.models.zoo.configs import ModelConfig
+            return ModelConfig(
+                model_name="unknown",
+                model_type="unknown",
+                **kwargs
+            )
 
     def list_models(self) -> Dict[str, Dict[str, Any]]:
         """List all available models with their configurations.
@@ -232,8 +323,25 @@ class ModelRegistry:
                 "model_class": model_info.model_class,
                 "tags": model_info.tags,
                 "performance": model_info.performance,
-                "repo_id": model_info.repo_id
+                "repo_id": model_info.repo_id,
+                "has_weights": bool(model_info.run_id and self.nexus)
             }
+        
+        # Add available models from nexus if it supports listing
+        if self._is_huggingface_nexus():
+            try:
+                hub_models = self.nexus.list_available_models()
+                for model_info in hub_models:
+                    model_id = model_info.get("model_id", "unknown")
+                    models[f"hub_{model_id}"] = {
+                        "type": "hub",
+                        "model_id": model_id,
+                        "downloads": model_info.get("downloads", 0),
+                        "last_modified": model_info.get("last_modified"),
+                        "tags": model_info.get("tags", [])
+                    }
+            except Exception as e:
+                logger.debug(f"Failed to list hub models: {e}")
         
         return models
 
@@ -318,10 +426,11 @@ class ModelRegistry:
         """Set or update the Nexus instance.
         
         Args:
-            nexus: Nexus instance for remote model storage
+            nexus: Nexus instance for remote model storage (any implementation)
         """
         self.nexus = nexus
-        logger.info("Updated Nexus instance for model registry")
+        nexus_type = type(nexus).__name__
+        logger.info(f"Updated Nexus instance for model registry: {nexus_type}")
 
     def discover_models(self) -> Dict[str, List[str]]:
         """Discover available models by category.
@@ -333,7 +442,9 @@ class ModelRegistry:
             "registered": list(self._models.keys()),
             "pretrained": list(PRETRAINED_MODELS.keys()),
             "categories": {},
-            "use_cases": {}
+            "use_cases": {},
+            "nexus_type": type(self.nexus).__name__ if self.nexus else None,
+            "nexus_capabilities": self._get_nexus_capabilities()
         }
         
         # Add category breakdown
@@ -352,4 +463,19 @@ class ModelRegistry:
                 "considerations": info["considerations"]
             }
         
-        return discovery 
+        return discovery
+
+    def _get_nexus_capabilities(self) -> Dict[str, bool]:
+        """Get capabilities of the current nexus."""
+        if not self.nexus:
+            return {"available": False}
+        
+        return {
+            "available": True,
+            "load_weights": hasattr(self.nexus, 'load_run_weights'),
+            "store_weights": hasattr(self.nexus, 'store_run_weights'),
+            "metadata": hasattr(self.nexus, 'get_model_metadata'),
+            "list_models": hasattr(self.nexus, 'list_available_models'),
+            "huggingface_features": self._is_huggingface_nexus(),
+            "training_support": hasattr(self.nexus, 'conclude_run')
+        } 

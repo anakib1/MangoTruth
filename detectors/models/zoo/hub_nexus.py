@@ -5,21 +5,17 @@ from the HuggingFace Hub, allowing easy distribution and access to pre-trained
 plagiarism detection models.
 """
 
-import io
 import logging
 import pathlib
-import pickle
 import tempfile
 from typing import Optional, Dict, Union, List
 from uuid import uuid4
 
 from huggingface_hub import (
-    HfApi, 
-    upload_file, 
+    HfApi,
+    upload_file,
     hf_hub_download,
     create_repo,
-    RepoType,
-    ModelCard,
     HfFolder
 )
 from huggingface_hub.utils import RepositoryNotFoundError
@@ -78,15 +74,15 @@ class HuggingFaceNexus(Nexus, TrainingNexus):
         """Ensure repository exists and return the repo ID."""
         try:
             # Check if repo exists
-            self.api.repo_info(repo_id=repo_id, repo_type=RepoType.MODEL)
+            self.api.repo_info(repo_id=repo_id, repo_type='model')
             return repo_id
         except RepositoryNotFoundError:
-            # Create repository if it doesn't exist
+            # Create a repository if it doesn't exist
             if self.token:
                 logger.info(f"Creating new repository: {repo_id}")
                 url = create_repo(
                     repo_id=repo_id,
-                    repo_type=RepoType.MODEL,
+                    repo_type='model',
                     private=self.private,
                     token=self.token
                 )
@@ -157,7 +153,7 @@ class HuggingFaceNexus(Nexus, TrainingNexus):
                     path_or_fileobj=tmp_file.name,
                     path_in_repo="model_weights.pkl",
                     repo_id=repo_id,
-                    repo_type=RepoType.MODEL,
+                    repo_type='model',
                     token=self.token
                 )
             
@@ -213,7 +209,7 @@ class HuggingFaceNexus(Nexus, TrainingNexus):
                     path_or_fileobj=tmp_file.name,
                     path_in_repo="run_metadata.json",
                     repo_id=repo_id,
-                    repo_type=RepoType.MODEL,
+                    repo_type='model',
                     token=self.token
                 )
             
@@ -300,7 +296,7 @@ This model was trained using the [MangoTruth](https://github.com/MangoTruth/Mang
                     path_or_fileobj=tmp_file.name,
                     path_in_repo="README.md",
                     repo_id=repo_id,
-                    repo_type=RepoType.MODEL,
+                    repo_type='model',
                     token=self.token
                 )
             
@@ -321,9 +317,9 @@ This model was trained using the [MangoTruth](https://github.com/MangoTruth/Mang
             model_list = []
             
             for model in models:
-                if "plagiarism-detector" in model.modelId:
+                if "plagiarism-detector" in model.id:
                     model_list.append({
-                        "model_id": model.modelId,
+                        "model_id": model.id,
                         "downloads": model.downloads,
                         "last_modified": str(model.lastModified) if model.lastModified else None,
                         "tags": model.tags or []
@@ -360,4 +356,4 @@ This model was trained using the [MangoTruth](https://github.com/MangoTruth/Mang
                 
         except Exception as e:
             logger.warning(f"Failed to load metadata for {run_id}: {e}")
-            return None 
+            return None

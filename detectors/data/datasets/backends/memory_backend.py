@@ -79,7 +79,7 @@ class InMemoryBackend(StorageBackend[T]):
             pickle.dump(self.data, f)
     
     def load(self, path: str) -> None:
-        """Load the backend from disk using pickle."""
+        """Load the backend from the disk using pickle."""
         with open(path, 'rb') as f:
             self.data = pickle.load(f)
     
@@ -88,5 +88,5 @@ class InMemoryBackend(StorageBackend[T]):
         return InMemoryBackend(deepcopy(self.data))
     
     def get_indices(self) -> np.ndarray:
-        """Get array of valid indices."""
+        """Get an array of valid indices."""
         return np.arange(len(self.data)) 
